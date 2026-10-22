@@ -4,7 +4,7 @@
 
 Implementation: VERIFIED ngày 2026-10-22.
 External gate: NOT_REQUIRED.
-Commit/version kiểm: `40edbf6` trên `main` (workflow và lệnh tái lập); evidence này được ghi sau khi CI hoàn tất.
+Commit/version kiểm: `565d336` trên `main` (workflow dùng runner/action đã khóa); evidence này được ghi sau khi CI hoàn tất.
 
 ## Prerequisite và hợp đồng
 
@@ -26,7 +26,7 @@ Commit/version kiểm: `40edbf6` trên `main` (workflow và lệnh tái lập); 
 
 | Requirement ID | Trạng thái | Evidence | Giới hạn |
 | --- | --- | --- | --- |
-| RQ-FND-03-01 | PASS | Snapshot commit `40edbf6` có workflow và TESTING.md. [CI run thành công](https://github.com/troll9x/agent-life/actions/runs/39746110565) từ checkout mới chạy unit/lint/assembleDebug không cần secret. Lệnh tương ứng local cũng BUILD SUCCESSFUL. | `:app:testDebugUnitTest` và `:data:testDebugUnitTest` hiện `NO-SOURCE`; 7 test thực nằm trong `:domain:test`. |
+| RQ-FND-03-01 | PASS | Snapshot commit `565d336` có workflow và TESTING.md. [CI run thành công](https://github.com/troll9x/agent-life/actions/runs/39747041440) từ checkout mới chạy unit/lint/assembleDebug không cần secret. Lệnh tương ứng local cũng BUILD SUCCESSFUL. | `:app:testDebugUnitTest` và `:data:testDebugUnitTest` hiện `NO-SOURCE`; 7 test thực nằm trong `:domain:test`. |
 | RQ-FND-03-02 | PASS | App Compose test chạy thực trên AVD API 37: 1 test, 0 fail. Data/Room migration instrumentation được ghi `NOT_RUN` bên dưới; không lấy việc tạo test APK làm PASS. | Room schema/DAO chưa tồn tại đến DATA-02. |
 
 ## Lệnh đã chạy
@@ -40,6 +40,7 @@ Commit/version kiểm: `40edbf6` trên `main` (workflow và lệnh tái lập); 
 | `.\gradlew.bat :domain:test :data:testDebugUnitTest :app:testDebugUnitTest :data:lintDebug :app:lintDebug :app:assembleDebug --no-daemon --console=plain` | Windows sau khôi phục | BUILD SUCCESSFUL, 7 domain tests PASS, app/data unit `NO-SOURCE`. |
 | GitHub Actions run `39745935012` | Checkout mới, commit `4f0d627` | FAIL tại SDK setup vì action cũ mặc định cài gói `tools` không còn được phân phối; đã sửa thành `packages: platform-tools`. |
 | [GitHub Actions run `39746110565`](https://github.com/troll9x/agent-life/actions/runs/39746110565) | Checkout mới, commit `40edbf6` | PASS: SDK 37 cài thành công, unit/lint/assembleDebug hoàn tất. |
+| [GitHub Actions run `39747041440`](https://github.com/troll9x/agent-life/actions/runs/39747041440) | Checkout mới, commit `565d336`, Ubuntu 24.04, action SHA cập nhật | PASS: unit/lint/assembleDebug hoàn tất, không còn cảnh báo Node 20. |
 | [GitHub Actions run `39746480731`](https://github.com/troll9x/agent-life/actions/runs/39746480731) | Nhánh kiểm tra tạm, assertion Money cố tình sai | FAIL đúng ở `MoneyTest.kt:15`: 7 tests, 1 failed; process exit 1. Nhánh tạm đã xóa, `main` giữ test đúng. |
 
 ## Kịch bản và dữ liệu
