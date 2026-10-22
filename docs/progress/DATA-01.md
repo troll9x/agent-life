@@ -4,7 +4,7 @@
 
 Implementation: **IMPLEMENTED** ngày 2026-10-22.
 External gate: **NOT_REQUIRED**. Gate nội bộ còn mở: DATA-02 phải nối database mã hóa trước khi app production dùng repository.
-Version kiểm: source của commit DATA-01 này, dựa trên FND-03 (`565d336`).
+Version kiểm: source commit `1e0474c` trên `main`, dựa trên FND-03 (`565d336`).
 
 ## Prerequisite và hợp đồng
 
@@ -39,6 +39,7 @@ Version kiểm: source của commit DATA-01 này, dựa trên FND-03 (`565d336`)
 | `.\gradlew.bat :domain:test :data:testDebugUnitTest :app:assembleDebug :data:connectedDebugAndroidTest --console=plain` | AVD `Medium_Phone_API_37.0`, Android 17/API 37 | BUILD SUCCESSFUL; ban đầu 2/2 instrumentation tests PASS. |
 | `.\gradlew.bat :data:connectedDebugAndroidTest --console=plain` | Cùng AVD | BUILD SUCCESSFUL; thêm test atomic audit, 3/3 PASS. |
 | `.\gradlew.bat :domain:test :data:testDebugUnitTest :data:connectedDebugAndroidTest :app:assembleDebug :data:lintDebug --console=plain` | Cùng AVD, sau kiểm origin device/workspace | BUILD SUCCESSFUL; domain 7/7, data JVM `NO-SOURCE`, instrumentation 3/3, APK build, lint PASS. |
+| `gh run watch 39749726959 --repo troll9x/agent-life --exit-status` | GitHub Actions, checkout mới từ commit `1e0474c` | [Run 39749726959](https://github.com/troll9x/agent-life/actions/runs/39749726959) PASS: unit tests, lint, debug APK. CI không chạy instrumentation. |
 | `git diff --check` | Repo root | Không có lỗi whitespace; Git chỉ báo chuyển LF/CRLF ở working copy. |
 
 Report instrumentation: `android/data/build/outputs/androidTest-results/connected/debug/TEST-Medium_Phone_API_37.0(AVD) - 17.xml`: `tests="3" failures="0" errors="0" skipped="0"`. APK: `android/app/build/outputs/apk/debug/app-debug.apk`.

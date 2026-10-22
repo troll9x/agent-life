@@ -7,7 +7,7 @@ Bảng khởi tạo: chưa có code nào trong bộ này được coi là IMPLEM
 | [FND-01](modules/00-foundation/FND-01.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/FND-01.md): APK build PASS; user xác nhận chạy trong Android Studio trên emulator |
 | [FND-02](modules/00-foundation/FND-02.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/FND-02.md): 7 unit test PASS, APK build PASS |
 | [FND-03](modules/00-foundation/FND-03.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/FND-03.md): CI PASS, fail gate đã chứng minh; Room instrumentation NOT_RUN |
-| [DATA-01](modules/01-data-security/DATA-01.md) | PERSONAL | IMPLEMENTED | NOT_REQUIRED | [Evidence](../docs/progress/DATA-01.md): migration/repository instrumentation 3/3 PASS; production UI gate DATA-02 còn mở |
+| [DATA-01](modules/01-data-security/DATA-01.md) | PERSONAL | IMPLEMENTED | NOT_REQUIRED | [Evidence](../docs/progress/DATA-01.md): CI PASS, migration/repository instrumentation 3/3 PASS; production UI gate DATA-02 còn mở |
 | [DATA-02](modules/01-data-security/DATA-02.md) | PERSONAL | TODO | NOT_RUN | Chưa có |
 | [DATA-03](modules/01-data-security/DATA-03.md) | CONNECTED | TODO | NOT_RUN | Chưa có |
 | [DATA-04](modules/01-data-security/DATA-04.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
