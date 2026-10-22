@@ -49,8 +49,8 @@ Mức PERSONAL · [Prompt nhiệm vụ](modules/00-foundation/FND-02.md)
 
 Mức PERSONAL · [Prompt nhiệm vụ](modules/00-foundation/FND-03.md)
 
-- [ ] **RQ-FND-03-01** Một commit có lệnh build/unit/lint tái lập được, CI không cần credential bên ngoài.
-- [ ] **RQ-FND-03-02** Kết quả không chạy trên thiết bị được đánh dấu NOT_RUN, không tính là PASS.
+- [x] **RQ-FND-03-01** Một commit có lệnh build/unit/lint tái lập được, CI không cần credential bên ngoài. [Bằng chứng](docs/progress/FND-03.md).
+- [x] **RQ-FND-03-02** Kết quả không chạy trên thiết bị được đánh dấu NOT_RUN, không tính là PASS. [Bằng chứng](docs/progress/FND-03.md).
 
 ## DATA Dữ liệu cục bộ và bảo mật
 
