@@ -59,7 +59,7 @@ Mức PERSONAL · [Prompt nhiệm vụ](modules/00-foundation/FND-03.md)
 Mức PERSONAL · [Prompt nhiệm vụ](modules/01-data-security/DATA-01.md)
 
 - [ ] **RQ-DATA-01-01** Hồ sơ và trạng thái kết nối tồn tại sau đóng/mở tiến trình, UI quan sát qua repository.
-- [ ] **RQ-DATA-01-02** Migration giữ nguyên ID, số lượng và dữ liệu đã ghi; schema history được lưu trong repo.
+- [x] **RQ-DATA-01-02** Migration giữ nguyên ID, số lượng và dữ liệu đã ghi; schema history được lưu trong repo.
 
 ### DATA-02 Mã hóa DB và kho bí mật
 

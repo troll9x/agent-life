@@ -1,5 +1,11 @@
 plugins {
     alias(libs.plugins.android.library)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 android {
@@ -19,6 +25,9 @@ android {
 
 dependencies {
     implementation(project(":domain"))
+    implementation(libs.room.runtime)
+    implementation(libs.coroutines.core)
+    ksp(libs.room.compiler)
     testImplementation(libs.kotlin.test)
     testImplementation(libs.coroutines.test)
     androidTestImplementation(libs.androidx.test.runner)

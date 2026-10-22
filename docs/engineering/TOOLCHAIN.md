@@ -10,9 +10,9 @@ Open `android/` (the directory containing `settings.gradle.kts`) in Android Stud
 | Build JDK used here | Android Studio JBR 25.0.3 | Installed locally; Java/Kotlin bytecode targets 17 |
 | compileSdk / targetSdk / minSdk | 37 / 36 / 28 | SDK 37 installed; Play submissions require target API 36; min 28 is the architecture decision |
 | Compose BOM / Activity Compose | 2026.09.00 / 1.13.0 | Pinned stable UI dependencies |
-| Room | 2.8.5 | Pinned for later data task; no Room schema or runtime added in FND-01 |
+| Room | 2.8.5 | DATA-01 thêm Room runtime, KSP 2.3.12, schema v1/v2 và migration |
 
-AGP 9 provides built-in Kotlin for Android modules. The Kotlin JVM plugin applies only to `:domain`; the Compose compiler plugin applies to `:app`. Dependencies point `app -> data/domain` and `data -> domain`. Domain has no Android dependencies. FND-02 owns the domain types; DATA-02 owns Room schema and encryption compatibility.
+AGP 9 provides built-in Kotlin for Android modules. The Kotlin JVM plugin applies only to `:domain`; the Compose compiler plugin applies to `:app`. Dependencies point `app -> data/domain` and `data -> domain`. Domain has no Android dependencies. FND-02 owns the common domain types; DATA-01 owns foundation Room schema and DATA-02 owns encryption compatibility.
 
 Sources checked 2026-10-22:
 

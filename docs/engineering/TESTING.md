@@ -11,7 +11,7 @@ Set-Location android
 .\gradlew.bat :app:assembleDebug
 ```
 
-`app` và `data` hiện chưa có unit test riêng; Gradle báo `NO-SOURCE`. Bảy domain tests kiểm số tiền, overflow, UUID và ranh giới ngày có DST. Kết quả nằm trong `android/domain/build/reports/tests/test/` và báo cáo lint trong `android/*/build/reports/lint-results-debug.html`.
+`app` và `data` hiện chưa có unit test JVM riêng; Gradle báo `NO-SOURCE`. Bảy domain tests kiểm số tiền, overflow, UUID và ranh giới ngày có DST. Room migration và repository được kiểm bằng instrumentation của `data`. Kết quả nằm trong `android/domain/build/reports/tests/test/`, `android/data/build/reports/androidTests/connected/debug/` và báo cáo lint trong `android/*/build/reports/lint-results-debug.html`.
 
 ## Test trên thiết bị
 
@@ -19,9 +19,10 @@ Khởi động emulator hoặc kết nối điện thoại; xác nhận `adb dev
 
 ```powershell
 .\gradlew.bat :app:connectedDebugAndroidTest
+.\gradlew.bat :data:connectedDebugAndroidTest
 ```
 
-App có Compose smoke test mở launcher và xác nhận “Agent Life” hiển thị; đã chạy trên AVD API 37. Compose UI test cần Espresso 3.7.0 trên API 37 vì bản cũ gọi `InputManager.getInstance` đã bị bỏ. `data` đã cấu hình runner và Room testing dependency nhưng chưa có database/DAO; migration test thuộc DATA-02 và được ghi `NOT_RUN`. Nếu không có thiết bị online, ghi `NOT_RUN`, không lấy việc compile test APK làm kết quả instrumentation.
+App có Compose smoke test mở launcher và xác nhận “Agent Life” hiển thị; đã chạy trên AVD API 37. Compose UI test cần Espresso 3.7.0 trên API 37 vì bản cũ gọi `InputManager.getInstance` đã bị bỏ. DATA-01 có 3 instrumentation test: Room migration v1→v2, đóng/mở lại DB với hai connection/checkpoint độc lập, và atomic audit khi command bị từ chối. Các test này dùng database fixture plaintext chỉ trong test; app production chưa mở Room đến khi DATA-02 nối encryption. Nếu không có thiết bị online, ghi `NOT_RUN`, không lấy việc compile test APK làm kết quả instrumentation.
 
 ## CI
 
