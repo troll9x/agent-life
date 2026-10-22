@@ -1,0 +1,11 @@
+.gradle/
+.kotlin/
+**/build/
+android/local.properties
+android/gradle/gradle-daemon-jvm.properties
+*.keystore
+*.jks
+*.p12
+.idea/
+*.iml
+captures/
