@@ -1,10 +1,8 @@
 package vn.lifeos.domain.common
 
-import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.ZoneOffset
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -13,7 +11,7 @@ import kotlin.test.assertTrue
 class TimeWindowTest {
     @Test
     fun hanoiClockUsesProfileZone() {
-        val clock = Clock.fixed(Instant.parse("2026-10-19T01:59:00Z"), ZoneOffset.UTC)
+        val clock = FixtureFactory.clock()
         val local = localNow(clock, ZoneId.of("Asia/Ho_Chi_Minh"))
         assertEquals(8, local.hour)
         assertEquals(59, local.minute)
