@@ -72,8 +72,8 @@ Mức PERSONAL · [Prompt nhiệm vụ](modules/01-data-security/DATA-02.md)
 
 Mức CONNECTED · [Prompt nhiệm vụ](modules/01-data-security/DATA-03.md)
 
-- [ ] **RQ-DATA-03-01** 401/403/429/offline tạo trạng thái nguồn rõ ràng, không được biến thành danh sách rỗng thành công.
-- [ ] **RQ-DATA-03-02** Log không chứa bearer token, nội dung email hoặc thông tin tài khoản ngân hàng.
+- [x] **RQ-DATA-03-01** 401/403/429/offline tạo trạng thái nguồn rõ ràng, không được biến thành danh sách rỗng thành công. MockWebServer 8/8 PASS; live connector gate còn mở.
+- [x] **RQ-DATA-03-02** Log không chứa bearer token, nội dung email hoặc thông tin tài khoản ngân hàng. Telemetry chỉ nhận provider enum + mã sự kiện; fixture test PASS.
 
 ### DATA-04 Retention và xóa dữ liệu theo nguồn
 

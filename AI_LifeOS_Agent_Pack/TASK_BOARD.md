@@ -9,7 +9,7 @@ Bảng khởi tạo: chưa có code nào trong bộ này được coi là IMPLEM
 | [FND-03](modules/00-foundation/FND-03.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/FND-03.md): CI PASS, fail gate đã chứng minh; Room instrumentation NOT_RUN |
 | [DATA-01](modules/01-data-security/DATA-01.md) | PERSONAL | IMPLEMENTED | NOT_REQUIRED | [Evidence](../docs/progress/DATA-01.md): CI PASS, migration/repository instrumentation 3/3 PASS; production UI gate DATA-02 còn mở |
 | [DATA-02](modules/01-data-security/DATA-02.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/DATA-02.md): CI PASS; SQLCipher trên AVD, SQLite thường bị từ chối, 7 data + 2 app tests PASS |
-| [DATA-03](modules/01-data-security/DATA-03.md) | CONNECTED | TODO | NOT_RUN | Chưa có |
+| [DATA-03](modules/01-data-security/DATA-03.md) | CONNECTED | VERIFIED | EXTERNAL_BLOCKED | [Evidence](../docs/progress/DATA-03.md): 8/8 MockWebServer, domain 7/7, APK/lint PASS; live Microsoft/Google cần client ID và consent ở task connector |
 | [DATA-04](modules/01-data-security/DATA-04.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
 | [UX-01](modules/02-app-shell/UX-01.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
 | [UX-02](modules/02-app-shell/UX-02.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |

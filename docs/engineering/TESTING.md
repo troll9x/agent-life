@@ -11,7 +11,7 @@ Set-Location android
 .\gradlew.bat :app:assembleDebug
 ```
 
-`app` và `data` hiện chưa có unit test JVM riêng; Gradle báo `NO-SOURCE`. Bảy domain tests kiểm số tiền, overflow, UUID và ranh giới ngày có DST. Room migration, repository và SQLCipher/Keystore được kiểm bằng instrumentation của `data`. Kết quả nằm trong `android/domain/build/reports/tests/test/`, `android/{data,app}/build/reports/androidTests/connected/debug/` và báo cáo lint trong `android/*/build/reports/lint-results-debug.html`.
+`app` chưa có unit test JVM riêng; Gradle báo `NO-SOURCE`. `data` có 8 MockWebServer unit tests cho nền HTTP; bảy domain tests kiểm số tiền, overflow, UUID và ranh giới ngày có DST. Room migration, repository và SQLCipher/Keystore được kiểm bằng instrumentation của `data`. Kết quả nằm trong `android/domain/build/reports/tests/test/`, `android/data/build/reports/tests/testDebugUnitTest/`, `android/{data,app}/build/reports/androidTests/connected/debug/` và báo cáo lint trong `android/*/build/reports/lint-results-debug.html`.
 
 ## Test trên thiết bị
 
