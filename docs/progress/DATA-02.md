@@ -3,7 +3,7 @@
 ## Kết quả
 
 Implementation: **VERIFIED** ngày 2026-10-25 trên AVD Android 17/API 37. External gate: **NOT_REQUIRED**.
-Source kiểm: các file DATA-02 trong commit của task này, sau DATA-01 (`7dbefa8`). Không dùng tài khoản, client ID, tenant hay dữ liệu thật.
+Source kiểm: commit `bf8349a` trên `main`, sau DATA-01 (`7dbefa8`). Không dùng tài khoản, client ID, tenant hay dữ liệu thật.
 
 ## Prerequisite và hợp đồng
 
@@ -37,6 +37,7 @@ Source kiểm: các file DATA-02 trong commit của task này, sau DATA-01 (`7db
 | `.\gradlew.bat :data:connectedDebugAndroidTest --console=plain` | AVD `Medium_Phone_API_37.0`, `sys.boot_completed=1` | BUILD SUCCESSFUL; ban đầu 6/6. Sau thêm kiểm DB mất, 7/7, 0 failures/errors. Chạy lại khi `RUNNING_UNLOCKED` và màn hình `Asleep`, vẫn 7/7 PASS. |
 | `.\gradlew.bat :app:connectedDebugAndroidTest --console=plain` | AVD màn hình sáng | Lần đầu FAIL do smoke test chạy trước startup IO hoàn tất và test host sai; sửa test, sau đó 2/2 PASS. Lần chạy tổng hợp với màn hình `Asleep` FAIL `No compose hierarchies`; bật màn hình và chạy riêng lại 2/2 PASS. |
 | `.\gradlew.bat :domain:test :data:testDebugUnitTest :app:assembleDebug :data:lintDebug :app:lintDebug --console=plain` | Windows sau code cuối | BUILD SUCCESSFUL; domain 7/7, data JVM `NO-SOURCE`, APK build, data lint 0 issue; app lint 0 errors/5 warnings cũ. |
+| `gh run watch 40171161965 --repo troll9x/agent-life --exit-status` | GitHub Actions, checkout mới từ commit `bf8349a` | [Run 40171161965](https://github.com/troll9x/agent-life/actions/runs/40171161965) PASS: unit tests, lint và debug APK; CI không có emulator nên không chạy instrumentation. |
 | `git diff --check` | Repo root | Không có lỗi whitespace. |
 
 Report: `android/data/build/outputs/androidTest-results/connected/debug/TEST-Medium_Phone_API_37.0(AVD) - 17.xml` có `tests="7" failures="0" errors="0"`; app report tương ứng có `tests="2" failures="0" errors="0"`. APK: `android/app/build/outputs/apk/debug/app-debug.apk`.
