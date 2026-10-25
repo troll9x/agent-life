@@ -11,7 +11,7 @@ Bảng khởi tạo: chưa có code nào trong bộ này được coi là IMPLEM
 | [DATA-02](modules/01-data-security/DATA-02.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/DATA-02.md): CI PASS; SQLCipher trên AVD, SQLite thường bị từ chối, 7 data + 2 app tests PASS |
 | [DATA-03](modules/01-data-security/DATA-03.md) | CONNECTED | VERIFIED | EXTERNAL_BLOCKED | [Evidence](../docs/progress/DATA-03.md): 8/8 MockWebServer, domain 7/7, APK/lint PASS; live Microsoft/Google cần client ID và consent ở task connector |
 | [DATA-04](modules/01-data-security/DATA-04.md) | PERSONAL | IMPLEMENTED | EXTERNAL_BLOCKED | [Evidence](../docs/progress/DATA-04.md): Room v3 migration, data 12/12 AVD, app 2/2, HTTP 9/9; RQ-DATA-04-01 còn chờ ledger và SDK connector để kiểm không xóa giao dịch/revoke thật |
-| [UX-01](modules/02-app-shell/UX-01.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
+| [UX-01](modules/02-app-shell/UX-01.md) | PERSONAL | IMPLEMENTED | NOT_REQUIRED | [Evidence](../docs/progress/UX-01.md): 4/4 Compose AVD API 37 ở font 1.3x, unit 1/1, build/lint PASS; ca xoay form giao dịch chờ FIN-02 |
 | [UX-02](modules/02-app-shell/UX-02.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
 | [UX-03](modules/02-app-shell/UX-03.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
 | [PLAN-01](modules/03-planner/PLAN-01.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |

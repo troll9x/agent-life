@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">Agent Life</string>
+    <string name="open_menu">Mở menu</string>
+    <string name="area_today">Hôm nay</string>
+    <string name="area_work">Công việc</string>
+    <string name="area_finance">Tài chính</string>
+    <string name="area_health">Sức khỏe</string>
+    <string name="area_news">Bản tin</string>
+    <string name="area_assistant">Trợ lý</string>
+    <string name="area_settings">Cài đặt</string>
+    <string name="not_implemented">Chưa triển khai</string>
+    <string name="not_implemented_body">Khu vực này sẽ được bổ sung ở nhiệm vụ sau. Chưa có dữ liệu hay kết nối nào được xác nhận tại đây.</string>
+    <string name="settings_later">Các thiết lập hồ sơ và kết nối sẽ được bổ sung ở nhiệm vụ sau.</string>
+    <string name="appearance">Giao diện</string>
+    <string name="dark_theme">Chế độ tối</string>
+    <string name="loading_title">Đang mở dữ liệu</string>
+    <string name="loading_body">Vui lòng chờ trong khi ứng dụng mở kho dữ liệu cục bộ.</string>
+    <string name="unlock_title">Cần mở khóa thiết bị</string>
+    <string name="unlock_body">Mở khóa thiết bị để tiếp tục truy cập dữ liệu.</string>
+    <string name="recovery_title">Không thể mở dữ liệu đã lưu</string>
+    <string name="recovery_body">Ứng dụng không xóa dữ liệu hoặc tạo kho mới. Hãy giữ nguyên ứng dụng và khôi phục từ bản sao lưu đã xuất. Nếu chưa có bản sao lưu, hãy tìm trợ giúp trước khi tiếp tục.</string>
+    <string name="storage_title">Không thể khởi tạo kho dữ liệu</string>
+    <string name="storage_body">Hãy giữ nguyên dữ liệu và thử lại sau khi cập nhật ứng dụng.</string>
+    <string name="retry">Thử lại</string>
+    <string name="offline_title">Đang ngoại tuyến</string>
+    <string name="offline_body">Bạn vẫn có thể mở các khu vực dữ liệu cục bộ. Dữ liệu từ nguồn ngoài sẽ cập nhật khi có mạng.</string>
+</resources>

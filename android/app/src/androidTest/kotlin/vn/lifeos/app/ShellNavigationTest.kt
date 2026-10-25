@@ -1,0 +1,50 @@
+package vn.lifeos.app
+
+import android.content.pm.ActivityInfo
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.test.espresso.Espresso
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+
+@RunWith(AndroidJUnit4::class)
+class ShellNavigationTest {
+    @get:Rule val composeRule = createAndroidComposeRule<MainActivity>()
+
+    private fun awaitShell() {
+        composeRule.waitUntil(15_000) {
+            composeRule.onAllNodesWithText("Hôm nay").fetchSemanticsNodes().isNotEmpty()
+        }
+    }
+
+    @Test fun opensAllAreasAndBackReturnsToPreviousArea() {
+        awaitShell()
+        listOf("Công việc", "Tài chính", "Sức khỏe", "Bản tin", "Trợ lý", "Cài đặt").forEach { area ->
+            composeRule.onNodeWithContentDescription("Mở menu").performClick()
+            composeRule.onNodeWithText(area).performClick()
+            composeRule.waitForIdle()
+            composeRule.onAllNodesWithText(area).onFirst().assertIsDisplayed()
+            if (area != "Cài đặt") composeRule.onNodeWithText("Chưa triển khai").assertIsDisplayed()
+        }
+        Espresso.pressBack()
+        composeRule.onAllNodesWithText("Trợ lý").onFirst().assertIsDisplayed()
+    }
+
+    @Test fun routeSurvivesRotation() {
+        awaitShell()
+        composeRule.onNodeWithContentDescription("Mở menu").performClick()
+        composeRule.onNodeWithText("Tài chính").performClick()
+        composeRule.activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        composeRule.waitForIdle()
+        composeRule.onAllNodesWithText("Tài chính").onFirst().assertIsDisplayed()
+        composeRule.activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+    }
+
+}
