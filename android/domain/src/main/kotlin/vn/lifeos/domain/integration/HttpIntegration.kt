@@ -15,7 +15,7 @@ interface AccessTokenProvider {
 }
 
 enum class ConnectionFailure {
-    AUTH_REQUIRED, PERMISSION_DENIED, RATE_LIMITED, OFFLINE, TIMED_OUT,
+    DISCONNECTED, AUTH_REQUIRED, PERMISSION_DENIED, RATE_LIMITED, OFFLINE, TIMED_OUT,
     PROVIDER_ERROR, INVALID_RESPONSE, RESPONSE_TOO_LARGE, REDIRECT_BLOCKED,
 }
 
@@ -30,11 +30,13 @@ sealed interface ConnectionResult<out T> {
 
 fun connectionFailure(reason: ConnectionFailure, checkedAt: Instant, retryAt: Instant? = null): ConnectionResult.Failure {
     val state = when (reason) {
+        ConnectionFailure.DISCONNECTED -> SourceState.NOT_CONNECTED
         ConnectionFailure.AUTH_REQUIRED -> SourceState.AUTH_REQUIRED
         ConnectionFailure.PERMISSION_DENIED -> SourceState.PERMISSION_DENIED
         else -> SourceState.ERROR
     }
     val code = when (reason) {
+        ConnectionFailure.DISCONNECTED -> AppErrorCode.NOT_FOUND
         ConnectionFailure.AUTH_REQUIRED -> AppErrorCode.AUTH_REQUIRED
         ConnectionFailure.PERMISSION_DENIED -> AppErrorCode.PERMISSION_DENIED
         ConnectionFailure.OFFLINE, ConnectionFailure.TIMED_OUT, ConnectionFailure.RATE_LIMITED -> AppErrorCode.NETWORK

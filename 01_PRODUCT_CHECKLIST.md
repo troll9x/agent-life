@@ -80,7 +80,7 @@ Mức CONNECTED · [Prompt nhiệm vụ](modules/01-data-security/DATA-03.md)
 Mức PERSONAL · [Prompt nhiệm vụ](modules/01-data-security/DATA-04.md)
 
 - [ ] **RQ-DATA-04-01** Ngắt kết nối ngăn request tiếp theo của nguồn và không xóa giao dịch đã xác nhận ngoài ý muốn.
-- [ ] **RQ-DATA-04-02** Cleanup lặp nhiều lần an toàn; dữ liệu raw hết hạn không còn trên ổ.
+- [x] **RQ-DATA-04-02** Cleanup lặp nhiều lần an toàn; dữ liệu raw hết hạn không còn trên ổ. SQLCipher/secure_delete và AVD fixture PASS; lịch WorkManager chịu giới hạn hệ điều hành.
 
 ## UX Giao diện, onboarding và cài đặt
 

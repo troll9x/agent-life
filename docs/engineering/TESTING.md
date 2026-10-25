@@ -11,7 +11,7 @@ Set-Location android
 .\gradlew.bat :app:assembleDebug
 ```
 
-`app` chưa có unit test JVM riêng; Gradle báo `NO-SOURCE`. `data` có 8 MockWebServer unit tests cho nền HTTP; bảy domain tests kiểm số tiền, overflow, UUID và ranh giới ngày có DST. Room migration, repository và SQLCipher/Keystore được kiểm bằng instrumentation của `data`. Kết quả nằm trong `android/domain/build/reports/tests/test/`, `android/data/build/reports/tests/testDebugUnitTest/`, `android/{data,app}/build/reports/androidTests/connected/debug/` và báo cáo lint trong `android/*/build/reports/lint-results-debug.html`.
+`app` chưa có unit test JVM riêng; Gradle báo `NO-SOURCE`. `data` có 9 MockWebServer unit tests cho nền HTTP; bảy domain tests kiểm số tiền, overflow, UUID và ranh giới ngày có DST. Room migration, repository, privacy retention và SQLCipher/Keystore được kiểm bằng instrumentation của `data`. Kết quả nằm trong `android/domain/build/reports/tests/test/`, `android/data/build/reports/tests/testDebugUnitTest/`, `android/{data,app}/build/reports/androidTests/connected/debug/` và báo cáo lint trong `android/*/build/reports/lint-results-debug.html`.
 
 ## Test trên thiết bị
 
@@ -22,7 +22,7 @@ Khởi động emulator hoặc kết nối điện thoại; xác nhận `adb dev
 .\gradlew.bat :data:connectedDebugAndroidTest
 ```
 
-App có 2 Compose tests: launcher mở DB mã hóa rồi hiển thị “Agent Life”, và màn hình hướng dẫn khi khóa không khả dụng. Compose UI test cần Espresso 3.7.0 trên API 37 vì bản cũ gọi `InputManager.getInstance` đã bị bỏ. `data` có 7 instrumentation tests: 3 test Room migration/repository và 4 test SQLCipher/Keystore, gồm SQLite thường từ chối file và mất khóa không xóa DB. DATA-01 vẫn có fixture DB plaintext chỉ trong test APK; app production chỉ mở qua `EncryptedDatabaseProvider`. Nếu không có thiết bị online, ghi `NOT_RUN`, không lấy việc compile test APK làm kết quả instrumentation. Mô hình khóa và giới hạn ở [ENCRYPTION.md](ENCRYPTION.md).
+App có 2 Compose tests: launcher mở DB mã hóa rồi hiển thị “Agent Life”, và màn hình hướng dẫn khi khóa không khả dụng. Compose UI test cần Espresso 3.7.0 trên API 37 vì bản cũ gọi `InputManager.getInstance` đã bị bỏ. `data` có 12 instrumentation tests: 3 test Room nền tảng, 4 test SQLCipher/Keystore, 5 test migration/privacy, gồm xóa raw quá hạn và ngắt riêng từng account. DATA-01 vẫn có fixture DB plaintext chỉ trong test APK; app production chỉ mở qua `EncryptedDatabaseProvider`. Nếu không có thiết bị online, ghi `NOT_RUN`, không lấy việc compile test APK làm kết quả instrumentation. Mô hình khóa và giới hạn ở [ENCRYPTION.md](ENCRYPTION.md).
 
 ## CI
 

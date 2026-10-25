@@ -130,3 +130,35 @@ data class AuditEventEntity(
     val happenedAt: Long,
     val operationId: String? = null,
 )
+
+@Entity(
+    tableName = "privacy_preferences",
+    primaryKeys = ["workspaceId", "sourceKind"],
+    foreignKeys = [ForeignKey(entity = WorkspaceEntity::class, parentColumns = ["id"], childColumns = ["workspaceId"], onDelete = ForeignKey.RESTRICT)],
+    indices = [Index("workspaceId")],
+)
+data class PrivacyPreferenceEntity(
+    val workspaceId: String,
+    val sourceKind: String,
+    val allowRemoteProcessing: Boolean,
+    val cachePolicy: String,
+    val rawRetentionDays: Int,
+)
+
+/** Raw content is nullable and exists only in the encrypted DB after explicit diagnostic opt-in. */
+@Entity(
+    tableName = "source_captures",
+    foreignKeys = [ForeignKey(entity = IntegrationConnectionEntity::class, parentColumns = ["workspaceId", "id"], childColumns = ["workspaceId", "connectionId"], onDelete = ForeignKey.RESTRICT)],
+    indices = [Index(value = ["workspaceId", "connectionId"]), Index(value = ["workspaceId", "sourceKind"]), Index(value = ["workspaceId", "connectionId", "sourceEventId"], unique = true), Index("rawExpiresAt")],
+)
+data class SourceCaptureEntity(
+    @PrimaryKey val id: String,
+    val workspaceId: String,
+    val connectionId: String,
+    val sourceKind: String,
+    val sourceEventId: String,
+    val processingState: String,
+    val rawContent: String?,
+    val rawExpiresAt: Long?,
+    val createdAt: Long,
+)

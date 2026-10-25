@@ -1,0 +1,884 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "0bca371dee1dda305914aed3f32161ed",
+    "entities": [
+      {
+        "tableName": "workspaces",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `ownerLocalProfileId` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `version` INTEGER NOT NULL, `originDeviceId` TEXT NOT NULL, `deletedAt` INTEGER, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ownerLocalProfileId",
+            "columnName": "ownerLocalProfileId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "version",
+            "columnName": "version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "originDeviceId",
+            "columnName": "originDeviceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deletedAt",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "profiles",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `workspaceId` TEXT NOT NULL, `displayName` TEXT NOT NULL, `zoneId` TEXT NOT NULL, `baseCurrency` TEXT NOT NULL, `budgetStartDay` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `version` INTEGER NOT NULL, `originDeviceId` TEXT NOT NULL, `deletedAt` INTEGER, PRIMARY KEY(`id`), FOREIGN KEY(`workspaceId`) REFERENCES `workspaces`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "workspaceId",
+            "columnName": "workspaceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "displayName",
+            "columnName": "displayName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "zoneId",
+            "columnName": "zoneId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "baseCurrency",
+            "columnName": "baseCurrency",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "budgetStartDay",
+            "columnName": "budgetStartDay",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "version",
+            "columnName": "version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "originDeviceId",
+            "columnName": "originDeviceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deletedAt",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_profiles_workspaceId",
+            "unique": false,
+            "columnNames": [
+              "workspaceId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_profiles_workspaceId` ON `${TABLE_NAME}` (`workspaceId`)"
+          },
+          {
+            "name": "index_profiles_workspaceId_id",
+            "unique": true,
+            "columnNames": [
+              "workspaceId",
+              "id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_profiles_workspaceId_id` ON `${TABLE_NAME}` (`workspaceId`, `id`)"
+          },
+          {
+            "name": "index_profiles_workspaceId_updatedAt",
+            "unique": false,
+            "columnNames": [
+              "workspaceId",
+              "updatedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_profiles_workspaceId_updatedAt` ON `${TABLE_NAME}` (`workspaceId`, `updatedAt`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "workspaces",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "workspaceId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "devices",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `workspaceId` TEXT NOT NULL, `platform` TEXT NOT NULL, `appVersion` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `version` INTEGER NOT NULL, `originDeviceId` TEXT NOT NULL, `revokedAt` INTEGER, `deletedAt` INTEGER, PRIMARY KEY(`id`), FOREIGN KEY(`workspaceId`) REFERENCES `workspaces`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "workspaceId",
+            "columnName": "workspaceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "platform",
+            "columnName": "platform",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "appVersion",
+            "columnName": "appVersion",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "version",
+            "columnName": "version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "originDeviceId",
+            "columnName": "originDeviceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "revokedAt",
+            "columnName": "revokedAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deletedAt",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_devices_workspaceId",
+            "unique": false,
+            "columnNames": [
+              "workspaceId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_devices_workspaceId` ON `${TABLE_NAME}` (`workspaceId`)"
+          },
+          {
+            "name": "index_devices_workspaceId_id",
+            "unique": true,
+            "columnNames": [
+              "workspaceId",
+              "id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_devices_workspaceId_id` ON `${TABLE_NAME}` (`workspaceId`, `id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "workspaces",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "workspaceId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "integration_connections",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `workspaceId` TEXT NOT NULL, `provider` TEXT NOT NULL, `externalAccountId` TEXT, `tenantId` TEXT, `accountKey` TEXT NOT NULL, `tenantKey` TEXT NOT NULL, `scopes` TEXT NOT NULL, `configVersion` INTEGER NOT NULL, `state` TEXT NOT NULL, `lastAttemptAt` INTEGER, `lastSuccessfulAt` INTEGER, `notificationDeviceId` TEXT, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `version` INTEGER NOT NULL, `originDeviceId` TEXT NOT NULL, `deletedAt` INTEGER, PRIMARY KEY(`id`), FOREIGN KEY(`workspaceId`) REFERENCES `workspaces`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT , FOREIGN KEY(`workspaceId`, `notificationDeviceId`) REFERENCES `devices`(`workspaceId`, `id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "workspaceId",
+            "columnName": "workspaceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "provider",
+            "columnName": "provider",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "externalAccountId",
+            "columnName": "externalAccountId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "tenantId",
+            "columnName": "tenantId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "accountKey",
+            "columnName": "accountKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tenantKey",
+            "columnName": "tenantKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scopes",
+            "columnName": "scopes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "configVersion",
+            "columnName": "configVersion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastAttemptAt",
+            "columnName": "lastAttemptAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lastSuccessfulAt",
+            "columnName": "lastSuccessfulAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "notificationDeviceId",
+            "columnName": "notificationDeviceId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "version",
+            "columnName": "version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "originDeviceId",
+            "columnName": "originDeviceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deletedAt",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_integration_connections_workspaceId",
+            "unique": false,
+            "columnNames": [
+              "workspaceId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_integration_connections_workspaceId` ON `${TABLE_NAME}` (`workspaceId`)"
+          },
+          {
+            "name": "index_integration_connections_workspaceId_id",
+            "unique": true,
+            "columnNames": [
+              "workspaceId",
+              "id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_integration_connections_workspaceId_id` ON `${TABLE_NAME}` (`workspaceId`, `id`)"
+          },
+          {
+            "name": "index_integration_connections_workspaceId_provider_accountKey_tenantKey",
+            "unique": true,
+            "columnNames": [
+              "workspaceId",
+              "provider",
+              "accountKey",
+              "tenantKey"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_integration_connections_workspaceId_provider_accountKey_tenantKey` ON `${TABLE_NAME}` (`workspaceId`, `provider`, `accountKey`, `tenantKey`)"
+          },
+          {
+            "name": "index_integration_connections_workspaceId_state",
+            "unique": false,
+            "columnNames": [
+              "workspaceId",
+              "state"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_integration_connections_workspaceId_state` ON `${TABLE_NAME}` (`workspaceId`, `state`)"
+          },
+          {
+            "name": "index_integration_connections_workspaceId_notificationDeviceId",
+            "unique": false,
+            "columnNames": [
+              "workspaceId",
+              "notificationDeviceId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_integration_connections_workspaceId_notificationDeviceId` ON `${TABLE_NAME}` (`workspaceId`, `notificationDeviceId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "workspaces",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "workspaceId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "devices",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "workspaceId",
+              "notificationDeviceId"
+            ],
+            "referencedColumns": [
+              "workspaceId",
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "sync_checkpoints",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `workspaceId` TEXT NOT NULL, `connectionId` TEXT NOT NULL, `resourceKey` TEXT NOT NULL, `partialCursor` TEXT, `completedCursor` TEXT, `coveredFrom` INTEGER, `coveredTo` INTEGER, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `version` INTEGER NOT NULL, `originDeviceId` TEXT NOT NULL, `deletedAt` INTEGER, PRIMARY KEY(`id`), FOREIGN KEY(`workspaceId`, `connectionId`) REFERENCES `integration_connections`(`workspaceId`, `id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "workspaceId",
+            "columnName": "workspaceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "connectionId",
+            "columnName": "connectionId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "resourceKey",
+            "columnName": "resourceKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "partialCursor",
+            "columnName": "partialCursor",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "completedCursor",
+            "columnName": "completedCursor",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "coveredFrom",
+            "columnName": "coveredFrom",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "coveredTo",
+            "columnName": "coveredTo",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "version",
+            "columnName": "version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "originDeviceId",
+            "columnName": "originDeviceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deletedAt",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_sync_checkpoints_workspaceId_connectionId",
+            "unique": false,
+            "columnNames": [
+              "workspaceId",
+              "connectionId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_sync_checkpoints_workspaceId_connectionId` ON `${TABLE_NAME}` (`workspaceId`, `connectionId`)"
+          },
+          {
+            "name": "index_sync_checkpoints_connectionId_resourceKey",
+            "unique": true,
+            "columnNames": [
+              "connectionId",
+              "resourceKey"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_sync_checkpoints_connectionId_resourceKey` ON `${TABLE_NAME}` (`connectionId`, `resourceKey`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "integration_connections",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "workspaceId",
+              "connectionId"
+            ],
+            "referencedColumns": [
+              "workspaceId",
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "audit_events",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `workspaceId` TEXT NOT NULL, `actorType` TEXT NOT NULL, `action` TEXT NOT NULL, `entityType` TEXT NOT NULL, `entityId` TEXT NOT NULL, `happenedAt` INTEGER NOT NULL, `operationId` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`workspaceId`) REFERENCES `workspaces`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "workspaceId",
+            "columnName": "workspaceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "actorType",
+            "columnName": "actorType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "action",
+            "columnName": "action",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "entityType",
+            "columnName": "entityType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "entityId",
+            "columnName": "entityId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "happenedAt",
+            "columnName": "happenedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "operationId",
+            "columnName": "operationId",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_audit_events_workspaceId_happenedAt",
+            "unique": false,
+            "columnNames": [
+              "workspaceId",
+              "happenedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_audit_events_workspaceId_happenedAt` ON `${TABLE_NAME}` (`workspaceId`, `happenedAt`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "workspaces",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "workspaceId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "privacy_preferences",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`workspaceId` TEXT NOT NULL, `sourceKind` TEXT NOT NULL, `allowRemoteProcessing` INTEGER NOT NULL, `cachePolicy` TEXT NOT NULL, `rawRetentionDays` INTEGER NOT NULL, PRIMARY KEY(`workspaceId`, `sourceKind`), FOREIGN KEY(`workspaceId`) REFERENCES `workspaces`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "workspaceId",
+            "columnName": "workspaceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceKind",
+            "columnName": "sourceKind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "allowRemoteProcessing",
+            "columnName": "allowRemoteProcessing",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachePolicy",
+            "columnName": "cachePolicy",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rawRetentionDays",
+            "columnName": "rawRetentionDays",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "workspaceId",
+            "sourceKind"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_privacy_preferences_workspaceId",
+            "unique": false,
+            "columnNames": [
+              "workspaceId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_privacy_preferences_workspaceId` ON `${TABLE_NAME}` (`workspaceId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "workspaces",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "workspaceId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "source_captures",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `workspaceId` TEXT NOT NULL, `connectionId` TEXT NOT NULL, `sourceKind` TEXT NOT NULL, `sourceEventId` TEXT NOT NULL, `processingState` TEXT NOT NULL, `rawContent` TEXT, `rawExpiresAt` INTEGER, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`workspaceId`, `connectionId`) REFERENCES `integration_connections`(`workspaceId`, `id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "workspaceId",
+            "columnName": "workspaceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "connectionId",
+            "columnName": "connectionId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceKind",
+            "columnName": "sourceKind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceEventId",
+            "columnName": "sourceEventId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "processingState",
+            "columnName": "processingState",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rawContent",
+            "columnName": "rawContent",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "rawExpiresAt",
+            "columnName": "rawExpiresAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_source_captures_workspaceId_connectionId",
+            "unique": false,
+            "columnNames": [
+              "workspaceId",
+              "connectionId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_source_captures_workspaceId_connectionId` ON `${TABLE_NAME}` (`workspaceId`, `connectionId`)"
+          },
+          {
+            "name": "index_source_captures_workspaceId_sourceKind",
+            "unique": false,
+            "columnNames": [
+              "workspaceId",
+              "sourceKind"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_source_captures_workspaceId_sourceKind` ON `${TABLE_NAME}` (`workspaceId`, `sourceKind`)"
+          },
+          {
+            "name": "index_source_captures_workspaceId_connectionId_sourceEventId",
+            "unique": true,
+            "columnNames": [
+              "workspaceId",
+              "connectionId",
+              "sourceEventId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_source_captures_workspaceId_connectionId_sourceEventId` ON `${TABLE_NAME}` (`workspaceId`, `connectionId`, `sourceEventId`)"
+          },
+          {
+            "name": "index_source_captures_rawExpiresAt",
+            "unique": false,
+            "columnNames": [
+              "rawExpiresAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_source_captures_rawExpiresAt` ON `${TABLE_NAME}` (`rawExpiresAt`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "integration_connections",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "workspaceId",
+              "connectionId"
+            ],
+            "referencedColumns": [
+              "workspaceId",
+              "id"
+            ]
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0bca371dee1dda305914aed3f32161ed')"
+    ]
+  }
+}

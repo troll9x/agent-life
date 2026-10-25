@@ -28,6 +28,7 @@ import vn.lifeos.domain.integration.AccessTokenProvider
 import vn.lifeos.domain.integration.ConnectionFailure
 import vn.lifeos.domain.integration.ConnectionResult
 import vn.lifeos.domain.integration.connectionFailure
+import vn.lifeos.domain.privacy.ConnectionAccessGate
 import java.io.IOException
 import java.io.ByteArrayOutputStream
 import java.net.ConnectException
@@ -46,7 +47,7 @@ fun interface NetworkEventSink {
     fun record(provider: SourceKind, event: NetworkEvent)
 }
 
-enum class NetworkEvent { SUCCESS, AUTH_REQUIRED, PERMISSION_DENIED, RATE_LIMITED, OFFLINE, TIMED_OUT, PROVIDER_ERROR, INVALID_RESPONSE, RESPONSE_TOO_LARGE, REDIRECT_BLOCKED }
+enum class NetworkEvent { SUCCESS, DISCONNECTED, AUTH_REQUIRED, PERMISSION_DENIED, RATE_LIMITED, OFFLINE, TIMED_OUT, PROVIDER_ERROR, INVALID_RESPONSE, RESPONSE_TOO_LARGE, REDIRECT_BLOCKED }
 
 /** Explicit endpoint contract. Cleartext is accepted only on loopback for local fixtures. */
 class SourceEndpoint(baseUrl: String) {
@@ -90,6 +91,7 @@ data class SourceRequest(
 /** HTTP foundation; provider DTOs are decoded by connector-supplied serializers. */
 class SourceHttpClient(
     private val tokens: AccessTokenProvider,
+    private val access: ConnectionAccessGate,
     private val clock: Clock = Clock.systemUTC(),
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val events: NetworkEventSink = NetworkEventSink { _, _ -> },
@@ -106,6 +108,8 @@ class SourceHttpClient(
     init { require(maxResponseBytes > 0) }
 
     suspend fun <T> fetch(request: SourceRequest, serializer: KSerializer<T>): ConnectionResult<T> {
+        if (request.authenticated && request.source.connectionId == null) return fail(request.source, ConnectionFailure.DISCONNECTED)
+        if (request.source.connectionId != null && !access.isActive(request.source)) return fail(request.source, ConnectionFailure.DISCONNECTED)
         var url = request.endpoint.resolve(request.pathOrUrl)
             ?: return fail(request.source, ConnectionFailure.REDIRECT_BLOCKED)
         var token = if (request.authenticated) tokens.tokenFor(request.source)
@@ -117,6 +121,7 @@ class SourceHttpClient(
         val maxAttempts = if (retryable) 3 else 1
 
         while (true) {
+            if (request.source.connectionId != null && !access.isActive(request.source)) return fail(request.source, ConnectionFailure.DISCONNECTED)
             attempts++
             val raw = try {
                 execute(request, url, token)

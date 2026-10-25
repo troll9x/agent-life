@@ -50,7 +50,7 @@ class EncryptedDatabaseProvider(
                 passphrase = encoded
                 val database = Room.databaseBuilder(applicationContext, AgentLifeDatabase::class.java, databaseName)
                     .openHelperFactory(SupportOpenHelperFactory(encoded))
-                    .addMigrations(FoundationMigrations.from1To2)
+                    .addMigrations(FoundationMigrations.from1To2, FoundationMigrations.from2To3)
                     .build()
                 try {
                     database.openHelper.writableDatabase.query("SELECT COUNT(*) FROM sqlite_master").use { it.moveToFirst() }

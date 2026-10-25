@@ -32,6 +32,7 @@ dependencies {
     implementation(libs.coroutines.core)
     implementation(libs.okhttp)
     implementation(libs.serialization.json)
+    implementation(libs.work.runtime)
     ksp(libs.room.compiler)
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlin.test.junit)

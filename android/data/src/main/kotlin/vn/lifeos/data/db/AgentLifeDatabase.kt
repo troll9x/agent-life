@@ -7,10 +7,12 @@ import androidx.room.RoomDatabase
     entities = [
         WorkspaceEntity::class, ProfileEntity::class, DeviceEntity::class,
         IntegrationConnectionEntity::class, SyncCheckpointEntity::class, AuditEventEntity::class,
+        PrivacyPreferenceEntity::class, SourceCaptureEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class AgentLifeDatabase : RoomDatabase() {
     abstract fun foundationDao(): FoundationDao
+    abstract fun privacyDao(): PrivacyDao
 }
