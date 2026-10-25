@@ -3,6 +3,7 @@ package vn.lifeos.app
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
 import org.junit.Test
@@ -14,6 +15,9 @@ class MainActivitySmokeTest {
 
     @Test
     fun launcherShowsAppIdentity() {
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            composeRule.onAllNodesWithText("Agent Life").fetchSemanticsNodes().isNotEmpty()
+        }
         composeRule.onNodeWithText("Agent Life").assertIsDisplayed()
     }
 }

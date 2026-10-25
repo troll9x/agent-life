@@ -11,7 +11,7 @@ Set-Location android
 .\gradlew.bat :app:assembleDebug
 ```
 
-`app` và `data` hiện chưa có unit test JVM riêng; Gradle báo `NO-SOURCE`. Bảy domain tests kiểm số tiền, overflow, UUID và ranh giới ngày có DST. Room migration và repository được kiểm bằng instrumentation của `data`. Kết quả nằm trong `android/domain/build/reports/tests/test/`, `android/data/build/reports/androidTests/connected/debug/` và báo cáo lint trong `android/*/build/reports/lint-results-debug.html`.
+`app` và `data` hiện chưa có unit test JVM riêng; Gradle báo `NO-SOURCE`. Bảy domain tests kiểm số tiền, overflow, UUID và ranh giới ngày có DST. Room migration, repository và SQLCipher/Keystore được kiểm bằng instrumentation của `data`. Kết quả nằm trong `android/domain/build/reports/tests/test/`, `android/{data,app}/build/reports/androidTests/connected/debug/` và báo cáo lint trong `android/*/build/reports/lint-results-debug.html`.
 
 ## Test trên thiết bị
 
@@ -22,7 +22,7 @@ Khởi động emulator hoặc kết nối điện thoại; xác nhận `adb dev
 .\gradlew.bat :data:connectedDebugAndroidTest
 ```
 
-App có Compose smoke test mở launcher và xác nhận “Agent Life” hiển thị; đã chạy trên AVD API 37. Compose UI test cần Espresso 3.7.0 trên API 37 vì bản cũ gọi `InputManager.getInstance` đã bị bỏ. DATA-01 có 3 instrumentation test: Room migration v1→v2, đóng/mở lại DB với hai connection/checkpoint độc lập, và atomic audit khi command bị từ chối. Các test này dùng database fixture plaintext chỉ trong test; app production chưa mở Room đến khi DATA-02 nối encryption. Nếu không có thiết bị online, ghi `NOT_RUN`, không lấy việc compile test APK làm kết quả instrumentation.
+App có 2 Compose tests: launcher mở DB mã hóa rồi hiển thị “Agent Life”, và màn hình hướng dẫn khi khóa không khả dụng. Compose UI test cần Espresso 3.7.0 trên API 37 vì bản cũ gọi `InputManager.getInstance` đã bị bỏ. `data` có 7 instrumentation tests: 3 test Room migration/repository và 4 test SQLCipher/Keystore, gồm SQLite thường từ chối file và mất khóa không xóa DB. DATA-01 vẫn có fixture DB plaintext chỉ trong test APK; app production chỉ mở qua `EncryptedDatabaseProvider`. Nếu không có thiết bị online, ghi `NOT_RUN`, không lấy việc compile test APK làm kết quả instrumentation. Mô hình khóa và giới hạn ở [ENCRYPTION.md](ENCRYPTION.md).
 
 ## CI
 

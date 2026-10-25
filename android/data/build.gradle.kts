@@ -26,6 +26,8 @@ android {
 dependencies {
     implementation(project(":domain"))
     implementation(libs.room.runtime)
+    implementation(libs.sqlcipher.android)
+    implementation(libs.androidx.sqlite)
     implementation(libs.coroutines.core)
     ksp(libs.room.compiler)
     testImplementation(libs.kotlin.test)

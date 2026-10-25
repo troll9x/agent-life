@@ -65,8 +65,8 @@ Mức PERSONAL · [Prompt nhiệm vụ](modules/01-data-security/DATA-01.md)
 
 Mức PERSONAL · [Prompt nhiệm vụ](modules/01-data-security/DATA-02.md)
 
-- [ ] **RQ-DATA-02-01** File DB người dùng không thể đọc bằng SQLite thường mà không có khóa.
-- [ ] **RQ-DATA-02-02** Tác vụ nền đọc được DB sau khi thiết bị đã unlock ít nhất một lần; lỗi khóa không gây xóa dữ liệu.
+- [x] **RQ-DATA-02-01** File DB người dùng không thể đọc bằng SQLite thường mà không có khóa.
+- [x] **RQ-DATA-02-02** Tác vụ nền đọc được DB sau khi thiết bị đã unlock ít nhất một lần; lỗi khóa không gây xóa dữ liệu.
 
 ### DATA-03 Nền HTTP và trạng thái kết nối
 

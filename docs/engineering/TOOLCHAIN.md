@@ -11,6 +11,7 @@ Open `android/` (the directory containing `settings.gradle.kts`) in Android Stud
 | compileSdk / targetSdk / minSdk | 37 / 36 / 28 | SDK 37 installed; Play submissions require target API 36; min 28 is the architecture decision |
 | Compose BOM / Activity Compose | 2026.09.00 / 1.13.0 | Pinned stable UI dependencies |
 | Room | 2.8.5 | DATA-01 thêm Room runtime, KSP 2.3.12, schema v1/v2 và migration |
+| SQLCipher / AndroidX SQLite | 4.19.1 / 2.7.0 | DATA-02: Room 2 `SupportOpenHelperFactory`, kiểm trên AVD API 37 |
 
 AGP 9 provides built-in Kotlin for Android modules. The Kotlin JVM plugin applies only to `:domain`; the Compose compiler plugin applies to `:app`. Dependencies point `app -> data/domain` and `data -> domain`. Domain has no Android dependencies. FND-02 owns the common domain types; DATA-01 owns foundation Room schema and DATA-02 owns encryption compatibility.
 
