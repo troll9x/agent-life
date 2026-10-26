@@ -13,6 +13,7 @@ import kotlinx.coroutines.withContext
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 import vn.lifeos.data.db.AgentLifeDatabase
 import vn.lifeos.data.db.FoundationMigrations
+import vn.lifeos.data.planner.PlannerMigration
 
 sealed interface DatabaseAccess {
     data class Ready(val database: AgentLifeDatabase) : DatabaseAccess
@@ -50,7 +51,7 @@ class EncryptedDatabaseProvider(
                 passphrase = encoded
                 val database = Room.databaseBuilder(applicationContext, AgentLifeDatabase::class.java, databaseName)
                     .openHelperFactory(SupportOpenHelperFactory(encoded))
-                    .addMigrations(FoundationMigrations.from1To2, FoundationMigrations.from2To3)
+                    .addMigrations(FoundationMigrations.from1To2, FoundationMigrations.from2To3, PlannerMigration.from3To4)
                     .build()
                 try {
                     database.openHelper.writableDatabase.query("SELECT COUNT(*) FROM sqlite_master").use { it.moveToFirst() }

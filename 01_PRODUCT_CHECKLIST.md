@@ -111,8 +111,8 @@ Mức PERSONAL · [Prompt nhiệm vụ](modules/02-app-shell/UX-03.md)
 
 Mức PERSONAL · [Prompt nhiệm vụ](modules/03-planner/PLAN-01.md)
 
-- [ ] **RQ-PLAN-01-01** Task/checklist/lịch được lưu ngoại tuyến và có migration không mất dữ liệu.
-- [ ] **RQ-PLAN-01-02** Sự kiện cả ngày không bị lệch sang ngày trước khi đổi múi giờ.
+- [x] **RQ-PLAN-01-01** Task/checklist/lịch được lưu ngoại tuyến và có migration không mất dữ liệu. [Evidence](docs/progress/PLAN-01.md)
+- [x] **RQ-PLAN-01-02** Sự kiện cả ngày không bị lệch sang ngày trước khi đổi múi giờ. [Evidence](docs/progress/PLAN-01.md)
 
 ### PLAN-02 Màn hình CRUD công việc và lịch
 
