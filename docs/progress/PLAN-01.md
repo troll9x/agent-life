@@ -37,6 +37,7 @@ Implementation: **VERIFIED**. External gate: **NOT_REQUIRED**. Bản kiểm: 26/
 | `$env:JAVA_HOME='C:\Program Files\Android\Android Studio\jbr'; .\gradlew.bat :domain:test :data:testDebugUnitTest :data:connectedDebugAndroidTest :data:lintDebug :app:lintDebug :app:assembleDebug --console=plain --quiet` | Medium Phone AVD API 37 | Exit 0; domain 10/10, data unit 9/9, data instrumentation 16/16, lint và APK PASS. |
 | `$env:JAVA_HOME='C:\Program Files\Android\Android Studio\jbr'; .\gradlew.bat :domain:test :data:connectedDebugAndroidTest :app:assembleDebug --console=plain --quiet` | Cùng AVD, sau sửa version của Project | Exit 0; domain 10/10, data instrumentation 16/16, APK PASS. |
 | `$env:JAVA_HOME='C:\Program Files\Android\Android Studio\jbr'; .\gradlew.bat :data:connectedDebugAndroidTest :app:assembleDebug --console=plain --quiet` | Cùng AVD, sau bổ sung hủy reminder khi soft delete task | Exit 0; data instrumentation 16/16, APK PASS. |
+| `gh run watch 40283021131 --exit-status` | GitHub Actions, commit `683ff8a` | Exit 0; Android job hoàn tất sau 3m0s, unit test/lint/debug APK PASS. |
 
 Report: `android/domain/build/test-results/test/`, `android/data/build/test-results/testDebugUnitTest/`, `android/data/build/outputs/androidTest-results/connected/debug/`. APK: `android/app/build/outputs/apk/debug/app-debug.apk`.
 
