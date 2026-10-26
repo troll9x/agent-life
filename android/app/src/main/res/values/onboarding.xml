@@ -1,0 +1,33 @@
+<resources>
+    <string name="onboarding_title">Bắt đầu với Agent Life</string>
+    <string name="onboarding_intro">Tạo không gian cá nhân trên thiết bị. Bạn có thể bắt đầu mà không cần tài khoản Microsoft, Google hoặc quyền sức khỏe.</string>
+    <string name="display_name">Tên hiển thị</string>
+    <string name="time_zone">Múi giờ</string>
+    <string name="currency">Tiền tệ</string>
+    <string name="budget_start_day">Ngày đầu kỳ ngân sách</string>
+    <string name="day_range">Chọn ngày từ 1 đến 28.</string>
+    <string name="notifications_optional">Thông báo (tùy chọn)</string>
+    <string name="notifications_explain">Chỉ yêu cầu quyền khi bạn chọn bật. Từ chối vẫn dùng được ứng dụng.</string>
+    <string name="enable_notifications">Bật thông báo</string>
+    <string name="permission_granted">Đã cấp quyền thông báo</string>
+    <string name="permission_denied">Đã từ chối. Bạn có thể bật lại trong cài đặt hệ thống; ứng dụng sẽ không tự hỏi lại.</string>
+    <string name="finish_onboarding">Hoàn tất</string>
+    <string name="saving">Đang lưu…</string>
+    <string name="save_error">Không lưu được. Kiểm tra các trường và thử lại.</string>
+    <string name="profile_title">Hồ sơ cá nhân</string>
+    <string name="save_profile">Lưu cài đặt</string>
+    <string name="period_preview">Xem trước kỳ ngân sách</string>
+    <string name="period_preview_value">Từ %1$s đến trước %2$s</string>
+    <string name="period_impact">Đổi múi giờ hoặc ngày đầu kỳ có thể thay đổi cách nhóm báo cáo và thời điểm nhắc. Giao dịch đã lưu không bị sửa.</string>
+    <string name="integrations_title">Nguồn tích hợp</string>
+    <string name="integrations_gate">Chưa có SDK kết nối hoặc client ID trong bản này. Không có tài khoản nào được kết nối tự động.</string>
+    <string name="connect">Kết nối</string>
+    <string name="disconnect">Ngắt kết nối</string>
+    <string name="not_connected">Chưa kết nối</string>
+    <string name="last_success">Lần đồng bộ thành công: %1$s</string>
+    <string name="never_synced">Chưa từng đồng bộ thành công</string>
+    <string name="selected_scopes">Phạm vi: %1$s</string>
+    <string name="no_scopes">Chưa chọn phạm vi</string>
+    <string name="connector_unavailable">Tính năng kết nối chưa sẵn sàng. Không có yêu cầu quyền nào được gửi.</string>
+    <string name="profile_load_error">Không đọc được hồ sơ đã lưu.</string>
+</resources>

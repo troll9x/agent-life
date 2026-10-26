@@ -7,6 +7,8 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performClick
 import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,6 +21,14 @@ class ShellNavigationTest {
     @get:Rule val composeRule = createAndroidComposeRule<MainActivity>()
 
     private fun awaitShell() {
+        composeRule.waitUntil(15_000) {
+            composeRule.onAllNodesWithText("Bắt đầu với Agent Life").fetchSemanticsNodes().isNotEmpty() ||
+                composeRule.onAllNodesWithText("Hôm nay").fetchSemanticsNodes().isNotEmpty()
+        }
+        if (composeRule.onAllNodesWithText("Bắt đầu với Agent Life").fetchSemanticsNodes().isNotEmpty()) {
+            composeRule.onAllNodes(hasSetTextAction()).onFirst().performTextInput("Fixture User")
+            composeRule.onNodeWithText("Hoàn tất").performClick()
+        }
         composeRule.waitUntil(15_000) {
             composeRule.onAllNodesWithText("Hôm nay").fetchSemanticsNodes().isNotEmpty()
         }

@@ -19,7 +19,6 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.IconButton
@@ -42,6 +41,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavDestination.Companion.hasRoute
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import vn.lifeos.app.onboarding.OnboardingScreen
+import vn.lifeos.app.settings.ProfileSettingsScreen
+import vn.lifeos.data.profile.ProfileInput
 
 @Serializable internal data object TodayRoute
 @Serializable internal data object WorkRoute
@@ -62,7 +64,13 @@ private enum class Area(val label: Int, val number: String) {
 }
 
 @Composable
-internal fun AgentLifeScreen(state: ShellUiState, onRetry: () -> Unit, onThemeChange: (Boolean) -> Unit) {
+internal fun AgentLifeScreen(
+    state: ShellUiState,
+    onRetry: () -> Unit,
+    onThemeChange: (Boolean) -> Unit,
+    onCompleteOnboarding: (ProfileInput) -> Unit = {},
+    onUpdateProfile: (ProfileInput) -> Unit = {},
+) {
     Surface(Modifier.fillMaxSize()) {
         when (state.startup) {
             StartupStatus.Loading -> LoadingState()
@@ -84,14 +92,39 @@ internal fun AgentLifeScreen(state: ShellUiState, onRetry: () -> Unit, onThemeCh
                 action = stringResource(R.string.retry),
                 onAction = onRetry,
             )
-            StartupStatus.Ready -> AppShell(state.online, state.darkTheme, onThemeChange)
+            StartupStatus.Ready -> when (val profile = state.profile) {
+                ProfileStatus.Loading -> LoadingState()
+                ProfileStatus.NeedsOnboarding -> OnboardingScreen(
+                    saving = state.profileAction == ProfileAction.Saving,
+                    failed = state.profileAction == ProfileAction.Error,
+                    onComplete = onCompleteOnboarding,
+                )
+                ProfileStatus.Error -> ErrorState(
+                    title = stringResource(R.string.profile_load_error),
+                    body = stringResource(R.string.storage_body),
+                    action = stringResource(R.string.retry),
+                    onAction = onRetry,
+                )
+                is ProfileStatus.Ready -> AppShell(
+                    state.online, state.darkTheme, profile.snapshot, state.now,
+                    state.profileAction, onThemeChange, onUpdateProfile,
+                )
+            }
         }
     }
 }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-private fun AppShell(online: Boolean, darkTheme: Boolean, onThemeChange: (Boolean) -> Unit) {
+private fun AppShell(
+    online: Boolean,
+    darkTheme: Boolean,
+    snapshot: vn.lifeos.data.profile.LocalProfileSnapshot,
+    now: java.time.Instant,
+    action: ProfileAction,
+    onThemeChange: (Boolean) -> Unit,
+    onUpdateProfile: (ProfileInput) -> Unit,
+) {
     val navController = rememberNavController()
     val entry by navController.currentBackStackEntryAsState()
     val destination = entry?.destination
@@ -168,7 +201,10 @@ private fun AppShell(online: Boolean, darkTheme: Boolean, onThemeChange: (Boolea
                     composable<HealthRoute> { AreaScreen(Area.Health) }
                     composable<NewsRoute> { AreaScreen(Area.News) }
                     composable<AssistantRoute> { AreaScreen(Area.Assistant) }
-                    composable<SettingsRoute> { SettingsScreen(darkTheme, onThemeChange) }
+                    composable<SettingsRoute> {
+                        ProfileSettingsScreen(snapshot, now, action == ProfileAction.Saving,
+                            action == ProfileAction.Error, darkTheme, onThemeChange, onUpdateProfile)
+                    }
                 }
             }
         }
@@ -184,35 +220,6 @@ private fun AreaScreen(area: Area) {
         Text(area.number, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
         Text(stringResource(area.label), style = MaterialTheme.typography.displaySmall, modifier = Modifier.semantics { heading() })
         EmptyState()
-    }
-}
-
-@Composable
-private fun SettingsScreen(darkTheme: Boolean, onThemeChange: (Boolean) -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
-    ) {
-        Text(stringResource(R.string.area_settings), style = MaterialTheme.typography.displaySmall, modifier = Modifier.semantics { heading() })
-        Card(Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(stringResource(R.string.appearance), style = MaterialTheme.typography.titleLarge)
-                androidx.compose.foundation.layout.Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(stringResource(R.string.dark_theme), style = MaterialTheme.typography.bodyLarge)
-                    val darkLabel = stringResource(R.string.dark_theme)
-                    Switch(
-                        checked = darkTheme,
-                        onCheckedChange = onThemeChange,
-                        modifier = Modifier.testTag("dark_theme").semantics { contentDescription = darkLabel },
-                    )
-                }
-            }
-        }
-        Text(stringResource(R.string.settings_later), style = MaterialTheme.typography.bodyLarge)
     }
 }
 

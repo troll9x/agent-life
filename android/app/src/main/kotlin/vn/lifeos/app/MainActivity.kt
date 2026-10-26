@@ -29,6 +29,8 @@ class MainActivity : ComponentActivity() {
                     state = state,
                     onRetry = shellViewModel::retry,
                     onThemeChange = shellViewModel::setDarkTheme,
+                    onCompleteOnboarding = shellViewModel::completeOnboarding,
+                    onUpdateProfile = shellViewModel::updateProfile,
                 )
             }
         }

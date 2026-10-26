@@ -5,17 +5,25 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import java.time.Clock
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import vn.lifeos.data.security.DatabaseAccess
 import vn.lifeos.data.security.EncryptedDatabaseProvider
+import vn.lifeos.data.db.AgentLifeDatabase
+import vn.lifeos.data.profile.LocalProfileStore
+import vn.lifeos.domain.common.RandomIdGenerator
 
 /** Composition root. UI receives state from a ViewModel, never a database handle. */
 class AppContainer(context: Context, databaseProvider: EncryptedDatabaseProvider) {
+    private val applicationContext = context.applicationContext
+    val clock: Clock = Clock.systemUTC()
     val startupRepository: StartupRepository = EncryptedStartupRepository(databaseProvider)
     val appearanceRepository: AppearanceRepository = AppearanceRepository(context.applicationContext)
     val networkStatus: Flow<Boolean> = NetworkStatusRepository(context.applicationContext).online
+    fun profileStore(database: AgentLifeDatabase): LocalProfileStore =
+        LocalProfileStore(database, applicationContext, clock, RandomIdGenerator)
 }
 
 fun interface StartupRepository {

@@ -95,8 +95,8 @@ Mức PERSONAL · [Prompt nhiệm vụ](modules/02-app-shell/UX-01.md)
 
 Mức PERSONAL · [Prompt nhiệm vụ](modules/02-app-shell/UX-02.md)
 
-- [ ] **RQ-UX-02-01** Cài mới có thể vào app và nhập dữ liệu không cần Microsoft/Google hoặc quyền sức khỏe.
-- [ ] **RQ-UX-02-02** Cài đặt được giữ sau khởi động lại; cấp quyền bị từ chối không gây vòng hỏi lặp.
+- [x] **RQ-UX-02-01** Cài mới có thể vào app và nhập dữ liệu không cần Microsoft/Google hoặc quyền sức khỏe. [Evidence](docs/progress/UX-02.md)
+- [x] **RQ-UX-02-02** Cài đặt được giữ sau khởi động lại; cấp quyền bị từ chối không gây vòng hỏi lặp. [Evidence](docs/progress/UX-02.md)
 
 ### UX-03 Dashboard Hôm nay và tìm kiếm
 

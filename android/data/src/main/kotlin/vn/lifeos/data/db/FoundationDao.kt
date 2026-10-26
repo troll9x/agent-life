@@ -13,6 +13,12 @@ interface FoundationDao {
     @Query("SELECT COUNT(*) FROM workspaces WHERE deletedAt IS NULL")
     suspend fun activeWorkspaceCount(): Int
 
+    @Query("SELECT * FROM workspaces WHERE deletedAt IS NULL ORDER BY createdAt, id LIMIT 1")
+    suspend fun activeWorkspace(): WorkspaceEntity?
+
+    @Query("SELECT * FROM workspaces WHERE deletedAt IS NULL ORDER BY createdAt, id LIMIT 1")
+    fun observeActiveWorkspace(): Flow<WorkspaceEntity?>
+
     @Query("SELECT * FROM devices WHERE id = :id AND workspaceId = :workspaceId AND deletedAt IS NULL AND revokedAt IS NULL")
     suspend fun activeDevice(workspaceId: String, id: String): DeviceEntity?
 
