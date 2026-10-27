@@ -39,6 +39,8 @@ Khu Công việc có danh sách theo ngày/dự án, lọc đang làm/hoàn tấ
 
 Report: `android/domain/build/test-results/test/`, `android/app/build/test-results/testDebugUnitTest/`, `android/{app,data}/build/outputs/androidTest-results/connected/debug/`. APK: `android/app/build/outputs/apk/debug/app-debug.apk`.
 
+CI GitHub Actions cho commit `86bdf7303cb78002547cd157fc6c27bc3cf98f9b`: [Android run 40437475289](https://github.com/troll9x/agent-life/actions/runs/40437475289) hoàn tất PASS (`gh run watch 40437475289 --exit-status`, exit 0); job `build` đã chạy unit tests, lint và debug APK.
+
 ## Kịch bản và dữ liệu
 
 - Test chỉ dùng UUID/tên giả. Không có account, client ID, token, dữ liệu ngân hàng hoặc thông tin cá nhân trong code/evidence.
