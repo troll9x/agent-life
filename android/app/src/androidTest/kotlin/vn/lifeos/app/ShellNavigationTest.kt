@@ -5,7 +5,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
-import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.performTextInput
@@ -42,8 +42,18 @@ class ShellNavigationTest {
     @Test fun opensAllAreasAndBackReturnsToPreviousArea() {
         awaitShell()
         listOf("Công việc", "Tài chính", "Sức khỏe", "Bản tin", "Trợ lý", "Cài đặt").forEach { area ->
-            composeRule.onNodeWithContentDescription("Mở menu").performClick()
-            composeRule.onNodeWithText(area).performClick()
+            val key = when (area) {
+                "Công việc" -> "work"
+                "Tài chính" -> "finance"
+                "Sức khỏe" -> "health"
+                "Bản tin" -> "news"
+                "Trợ lý" -> "assistant"
+                else -> "settings"
+            }
+            if (key in listOf("health", "news", "settings")) {
+                composeRule.onNodeWithTag("nav_more").performClick()
+                composeRule.onNodeWithTag("more_$key").performClick()
+            } else composeRule.onNodeWithTag("nav_$key").performClick()
             composeRule.waitForIdle()
             composeRule.onAllNodesWithText(area).onFirst().assertIsDisplayed()
             if (area == "Công việc") {
@@ -58,8 +68,7 @@ class ShellNavigationTest {
 
     @Test fun routeSurvivesRotation() {
         awaitShell()
-        composeRule.onNodeWithContentDescription("Mở menu").performClick()
-        composeRule.onNodeWithText("Tài chính").performClick()
+        composeRule.onNodeWithTag("nav_finance").performClick()
         composeRule.activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         composeRule.waitForIdle()
         composeRule.onAllNodesWithText("Tài chính").onFirst().assertIsDisplayed()

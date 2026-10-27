@@ -50,10 +50,9 @@ internal fun ProfileSettingsScreen(
 ) {
     val profile = snapshot.profile
     var name by rememberSaveable(profile.id.value, profile.version) { mutableStateOf(profile.displayName) }
-    var zone by rememberSaveable(profile.id.value, profile.version) { mutableStateOf(profile.zoneId) }
-    var currency by rememberSaveable(profile.id.value, profile.version) { mutableStateOf(profile.baseCurrency) }
     var startDay by rememberSaveable(profile.id.value, profile.version) { mutableStateOf(profile.budgetStartDay.toString()) }
-    val input = parseInput(name, zone, currency, startDay)
+    val deviceZone = ZoneId.systemDefault().id
+    val input = parseInput(name, deviceZone, profile.baseCurrency, startDay)
     val preview = input?.let {
         budgetPeriodContaining(now.atZone(ZoneId.of(it.zoneId)).toLocalDate(), it.budgetStartDay)
     }
@@ -65,8 +64,7 @@ internal fun ProfileSettingsScreen(
     ) {
         Text(stringResource(R.string.profile_title), style = MaterialTheme.typography.headlineMedium)
         OutlinedTextField(name, { name = it }, label = { Text(stringResource(R.string.display_name)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(zone, { zone = it }, label = { Text(stringResource(R.string.time_zone)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(currency, { currency = it.uppercase() }, label = { Text(stringResource(R.string.currency)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+        Text(stringResource(R.string.device_time_zone, deviceZone), style = MaterialTheme.typography.bodyMedium)
         OutlinedTextField(startDay, { startDay = it.filter(Char::isDigit).take(2) }, label = { Text(stringResource(R.string.budget_start_day)) }, singleLine = true, modifier = Modifier.fillMaxWidth().testTag("budget_day"))
         if (preview != null) Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -76,7 +74,8 @@ internal fun ProfileSettingsScreen(
             }
         }
         if (failed) Text(stringResource(R.string.save_error), color = MaterialTheme.colorScheme.error)
-        Button(onClick = { input?.let(onSave) }, enabled = input != null && !saving) {
+        Button(onClick = { parseInput(name, ZoneId.systemDefault().id, profile.baseCurrency, startDay)?.let(onSave) },
+            enabled = input != null && !saving) {
             Text(stringResource(if (saving) R.string.saving else R.string.save_profile))
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {

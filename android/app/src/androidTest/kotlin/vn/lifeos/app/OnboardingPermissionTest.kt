@@ -2,6 +2,7 @@ package vn.lifeos.app
 
 import android.content.Context
 import android.os.Build
+import java.time.ZoneId
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,7 +54,9 @@ class OnboardingPermissionTest {
         composeRule.setContent { OnboardingScreen(saving = false, failed = false) { saved = it } }
         composeRule.onAllNodes(hasSetTextAction()).onFirst().performTextInput("Fixture User")
         composeRule.onNodeWithText("Hoàn tất").performClick()
-        assertEquals(ProfileInput("Fixture User", "Asia/Ho_Chi_Minh", "VND", 1), saved)
+        assertEquals(ProfileInput("Fixture User", ZoneId.systemDefault().id, "VND", 1), saved)
+        composeRule.onNodeWithText("Múi giờ theo thiết bị:", substring = true).assertIsDisplayed()
+        composeRule.onNodeWithText("Tiền tệ").assertDoesNotExist()
     }
 
     @Test fun firstUseOffersNotificationPermissionOnceAndCanBeDeferred() {

@@ -8,7 +8,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -34,8 +33,8 @@ class ShellStatesTest {
             }
         }
         composeRule.onNodeWithText("Đang ngoại tuyến").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Mở menu").performClick()
-        composeRule.onNodeWithText("Cài đặt").performClick()
+        composeRule.onNodeWithTag("nav_more").performClick()
+        composeRule.onNodeWithTag("more_settings").performClick()
         composeRule.onNodeWithText("Chế độ tối").assertIsDisplayed()
         composeRule.onNodeWithTag("dark_theme").assertIsOff()
         composeRule.onNodeWithTag("dark_theme").performClick()

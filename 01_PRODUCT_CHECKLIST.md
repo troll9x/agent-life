@@ -88,8 +88,8 @@ Mức PERSONAL · [Prompt nhiệm vụ](modules/01-data-security/DATA-04.md)
 
 Mức PERSONAL · [Prompt nhiệm vụ](modules/02-app-shell/UX-01.md)
 
-- [x] **RQ-UX-01-01** Đi tới được tất cả khu vực và back đúng; khu vực chưa triển khai ghi rõ trạng thái.
-- [x] **RQ-UX-01-02** UI đọc được khi font tăng 1.3x, có chế độ tối và thông báo lỗi có thao tác thử lại.
+- [x] **RQ-UX-01-01** Đi tới được tất cả khu vực và back đúng; khu vực chưa triển khai ghi rõ trạng thái. [Evidence](docs/progress/UX-01.md)
+- [x] **RQ-UX-01-02** UI đọc được khi font tăng 1.3x, có chế độ tối và thông báo lỗi có thao tác thử lại. [Evidence](docs/progress/UX-01.md)
 
 ### UX-02 Onboarding hồ sơ và quyền theo tính năng
 

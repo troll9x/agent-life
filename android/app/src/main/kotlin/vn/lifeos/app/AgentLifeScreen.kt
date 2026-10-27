@@ -10,26 +10,29 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.testTag
@@ -39,7 +42,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavDestination.Companion.hasRoute
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import vn.lifeos.app.onboarding.OnboardingScreen
 import vn.lifeos.app.onboarding.NotificationStartPrompt
@@ -58,14 +60,14 @@ import java.time.ZoneId
 @Serializable internal data object AssistantRoute
 @Serializable internal data object SettingsRoute
 
-private enum class Area(val label: Int, val number: String) {
-    Today(R.string.area_today, "01"),
-    Work(R.string.area_work, "02"),
-    Finance(R.string.area_finance, "03"),
-    Health(R.string.area_health, "04"),
-    News(R.string.area_news, "05"),
-    Assistant(R.string.area_assistant, "06"),
-    Settings(R.string.area_settings, "07"),
+private enum class Area(val label: Int, val number: String, val icon: Int) {
+    Today(R.string.area_today, "01", R.drawable.ic_today),
+    Work(R.string.area_work, "02", R.drawable.ic_work),
+    Finance(R.string.area_finance, "03", R.drawable.ic_finance),
+    Health(R.string.area_health, "04", R.drawable.ic_health),
+    News(R.string.area_news, "05", R.drawable.ic_news),
+    Assistant(R.string.area_assistant, "06", R.drawable.ic_assistant),
+    Settings(R.string.area_settings, "07", R.drawable.ic_settings),
 }
 
 @Composable
@@ -146,77 +148,72 @@ private fun AppShell(
         destination?.hasRoute<SettingsRoute>() == true -> Area.Settings
         else -> Area.Today
     }
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-    val menuLabel = stringResource(R.string.open_menu)
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet {
-                Text(
-                    text = stringResource(R.string.app_name),
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(24.dp),
-                )
-                HorizontalDivider()
-                Area.entries.forEach { area ->
-                    NavigationDrawerItem(
-                        label = { Text(stringResource(area.label)) },
+    var showMore by remember { mutableStateOf(false) }
+    fun navigateTo(area: Area) {
+        if (selected == area) return
+        when (area) {
+            Area.Today -> navController.navigate(TodayRoute) { launchSingleTop = true }
+            Area.Work -> navController.navigate(WorkRoute) { launchSingleTop = true }
+            Area.Finance -> navController.navigate(FinanceRoute) { launchSingleTop = true }
+            Area.Health -> navController.navigate(HealthRoute) { launchSingleTop = true }
+            Area.News -> navController.navigate(NewsRoute) { launchSingleTop = true }
+            Area.Assistant -> navController.navigate(AssistantRoute) { launchSingleTop = true }
+            Area.Settings -> navController.navigate(SettingsRoute) { launchSingleTop = true }
+        }
+    }
+    Scaffold(
+        topBar = { TopAppBar(title = { Text(stringResource(if (selected == Area.Today) R.string.app_name else selected.label)) }) },
+        bottomBar = {
+            NavigationBar {
+                listOf(Area.Today, Area.Work, Area.Finance, Area.Assistant).forEach { area ->
+                    NavigationBarItem(
+                        modifier = Modifier.testTag("nav_${area.name.lowercase()}"),
                         selected = selected == area,
-                        onClick = {
-                            if (selected != area) {
-                                when (area) {
-                                    Area.Today -> navController.navigate(TodayRoute)
-                                    Area.Work -> navController.navigate(WorkRoute)
-                                    Area.Finance -> navController.navigate(FinanceRoute)
-                                    Area.Health -> navController.navigate(HealthRoute)
-                                    Area.News -> navController.navigate(NewsRoute)
-                                    Area.Assistant -> navController.navigate(AssistantRoute)
-                                    Area.Settings -> navController.navigate(SettingsRoute)
-                                }
-                            }
-                            scope.launch { drawerState.close() }
-                        },
-                        modifier = Modifier.padding(horizontal = 12.dp),
+                        onClick = { navigateTo(area) },
+                        icon = { Icon(painterResource(area.icon), contentDescription = null) },
+                        label = { Text(stringResource(area.label)) },
                     )
                 }
+                NavigationBarItem(
+                    modifier = Modifier.testTag("nav_more"),
+                    selected = selected in listOf(Area.Health, Area.News, Area.Settings),
+                    onClick = { showMore = true },
+                    icon = { Icon(painterResource(R.drawable.ic_more), contentDescription = null) },
+                    label = { Text(stringResource(R.string.area_more)) },
+                )
             }
         },
-    ) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text(stringResource(selected.label)) },
-                    navigationIcon = {
-                        IconButton(
-                            onClick = { scope.launch { drawerState.open() } },
-                            modifier = Modifier.semantics { contentDescription = menuLabel },
-                        ) {
-                            Text(
-                                text = "☰",
-                                style = MaterialTheme.typography.headlineSmall,
-                            )
-                        }
-                    },
-                )
-            },
-        ) { padding ->
-            Column(Modifier.fillMaxSize().padding(padding)) {
-                if (!online) OfflineState()
-                NavHost(navController, startDestination = TodayRoute, modifier = Modifier.weight(1f)) {
-                    composable<TodayRoute> {
-                        PlannerDashboard(planner, now, ZoneId.of(snapshot.profile.zoneId), plannerActions) { navController.navigate(WorkRoute) }
-                    }
-                    composable<WorkRoute> { PlannerScreen(planner, now, ZoneId.of(snapshot.profile.zoneId), plannerActions) }
-                    composable<FinanceRoute> { AreaScreen(Area.Finance) }
-                    composable<HealthRoute> { AreaScreen(Area.Health) }
-                    composable<NewsRoute> { AreaScreen(Area.News) }
-                    composable<AssistantRoute> { AreaScreen(Area.Assistant) }
-                    composable<SettingsRoute> {
-                        ProfileSettingsScreen(snapshot, now, action == ProfileAction.Saving,
-                            action == ProfileAction.Error, darkTheme, onThemeChange, onUpdateProfile)
-                    }
+    ) { padding ->
+        Column(Modifier.fillMaxSize().padding(padding)) {
+            if (!online) OfflineState()
+            NavHost(navController, startDestination = TodayRoute, modifier = Modifier.weight(1f)) {
+                composable<TodayRoute> {
+                    PlannerDashboard(planner, now, ZoneId.of(snapshot.profile.zoneId), plannerActions) { navigateTo(Area.Work) }
                 }
+                composable<WorkRoute> { PlannerScreen(planner, now, ZoneId.of(snapshot.profile.zoneId), plannerActions) }
+                composable<FinanceRoute> { AreaScreen(Area.Finance) }
+                composable<HealthRoute> { AreaScreen(Area.Health) }
+                composable<NewsRoute> { AreaScreen(Area.News) }
+                composable<AssistantRoute> { AreaScreen(Area.Assistant) }
+                composable<SettingsRoute> {
+                    ProfileSettingsScreen(snapshot, now, action == ProfileAction.Saving,
+                        action == ProfileAction.Error, darkTheme, onThemeChange, onUpdateProfile)
+                }
+            }
+        }
+    }
+    if (showMore) ModalBottomSheet(onDismissRequest = { showMore = false }) {
+        Text(stringResource(R.string.area_more), style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
+        LazyColumn(contentPadding = PaddingValues(bottom = 24.dp)) {
+            items(3) { index ->
+                val area = listOf(Area.Health, Area.News, Area.Settings)[index]
+                ListItem(
+                    headlineContent = { Text(stringResource(area.label)) },
+                    leadingContent = { Icon(painterResource(area.icon), contentDescription = null) },
+                    modifier = Modifier.fillMaxWidth().testTag("more_${area.name.lowercase()}")
+                        .clickable { showMore = false; navigateTo(area) },
+                )
             }
         }
     }

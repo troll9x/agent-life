@@ -26,16 +26,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import java.time.ZoneId
 import vn.lifeos.app.R
 import vn.lifeos.data.profile.ProfileInput
+
+internal const val DEFAULT_BASE_CURRENCY = "VND"
 
 @Composable
 internal fun OnboardingScreen(saving: Boolean, failed: Boolean, onComplete: (ProfileInput) -> Unit) {
     var name by rememberSaveable { mutableStateOf("") }
-    var zone by rememberSaveable { mutableStateOf("Asia/Ho_Chi_Minh") }
-    var currency by rememberSaveable { mutableStateOf("VND") }
     var startDay by rememberSaveable { mutableStateOf("1") }
-    val input = parseInput(name, zone, currency, startDay)
+    val deviceZone = ZoneId.systemDefault().id
+    val input = parseInput(name, deviceZone, DEFAULT_BASE_CURRENCY, startDay)
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -43,8 +45,7 @@ internal fun OnboardingScreen(saving: Boolean, failed: Boolean, onComplete: (Pro
         Text(stringResource(R.string.onboarding_title), style = MaterialTheme.typography.headlineLarge)
         Text(stringResource(R.string.onboarding_intro), style = MaterialTheme.typography.bodyLarge)
         OutlinedTextField(name, { name = it }, label = { Text(stringResource(R.string.display_name)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(zone, { zone = it }, label = { Text(stringResource(R.string.time_zone)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(currency, { currency = it.uppercase() }, label = { Text(stringResource(R.string.currency)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+        Text(stringResource(R.string.device_time_zone, deviceZone), style = MaterialTheme.typography.bodyMedium)
         OutlinedTextField(
             startDay, { startDay = it.filter(Char::isDigit).take(2) },
             label = { Text(stringResource(R.string.budget_start_day)) },
@@ -54,7 +55,8 @@ internal fun OnboardingScreen(saving: Boolean, failed: Boolean, onComplete: (Pro
         )
         NotificationPermissionOption()
         if (failed) Text(stringResource(R.string.save_error), color = MaterialTheme.colorScheme.error)
-        Button(onClick = { input?.let(onComplete) }, enabled = input != null && !saving, modifier = Modifier.fillMaxWidth()) {
+        Button(onClick = { parseInput(name, ZoneId.systemDefault().id, DEFAULT_BASE_CURRENCY, startDay)?.let(onComplete) },
+            enabled = input != null && !saving, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(if (saving) R.string.saving else R.string.finish_onboarding))
         }
     }

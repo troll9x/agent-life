@@ -4,13 +4,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import java.time.Instant
+import java.time.ZoneId
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import vn.lifeos.data.security.DatabaseAccess
 import vn.lifeos.data.profile.LocalProfileSnapshot
 import vn.lifeos.data.profile.LocalProfileStore
@@ -59,6 +63,7 @@ internal class ShellViewModel(
     private var openJob: Job? = null
     private var profileJob: Job? = null
     private var saveJob: Job? = null
+    private val zoneSyncMutex = Mutex()
     private var profileStore: LocalProfileStore? = null
     private var plannerFeature: PlannerFeature? = null
     private var plannerJob: Job? = null
@@ -122,6 +127,23 @@ internal class ShellViewModel(
     fun updateProfile(input: ProfileInput) = saveProfile {
         val profile = (mutableState.value.profile as? ProfileStatus.Ready)?.snapshot?.profile
         if (profile == null) null else profileStore?.update(profile, input)
+    }
+
+    fun syncDeviceTimeZone(zoneId: String) {
+        if (runCatching { ZoneId.of(zoneId) }.isFailure || saveJob?.isActive == true) return
+        if (mutableState.value.profile !is ProfileStatus.Ready) return
+        val store = profileStore ?: return
+        viewModelScope.launch {
+            zoneSyncMutex.withLock {
+                val profile = (store.observe().first() as? Outcome.Success)?.value?.profile ?: return@withLock
+                if (profile.zoneId == zoneId) return@withLock
+                val result = try {
+                    store.update(profile, ProfileInput(profile.displayName, zoneId, profile.baseCurrency, profile.budgetStartDay))
+                } catch (cancelled: CancellationException) { throw cancelled }
+                catch (_: Exception) { null }
+                if (result !is Outcome.Success) mutableState.value = mutableState.value.copy(profileAction = ProfileAction.Error)
+            }
+        }
     }
 
     private fun saveProfile(operation: suspend () -> Outcome<*>?) {
