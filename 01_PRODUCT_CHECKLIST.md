@@ -118,8 +118,8 @@ Mức PERSONAL · [Prompt nhiệm vụ](modules/03-planner/PLAN-01.md)
 
 Mức PERSONAL · [Prompt nhiệm vụ](modules/03-planner/PLAN-02.md)
 
-- [ ] **RQ-PLAN-02-01** Có thể tạo/sửa/hoàn tất/checklist/lịch ngoại tuyến; thay đổi hiện trên dashboard.
-- [ ] **RQ-PLAN-02-02** Lịch chồng nhau có cảnh báo và lịch lặp không phát sinh occurrence trùng.
+- [x] **RQ-PLAN-02-01** Có thể tạo/sửa/hoàn tất/checklist/lịch ngoại tuyến; thay đổi hiện trên dashboard. [Evidence](docs/progress/PLAN-02.md)
+- [x] **RQ-PLAN-02-02** Lịch chồng nhau có cảnh báo và lịch lặp không phát sinh occurrence trùng. [Evidence](docs/progress/PLAN-02.md)
 
 ### PLAN-03 Engine nhắc việc Android
 

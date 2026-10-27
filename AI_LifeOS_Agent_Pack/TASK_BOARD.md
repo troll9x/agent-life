@@ -15,7 +15,7 @@ Bảng khởi tạo: chưa có code nào trong bộ này được coi là IMPLEM
 | [UX-02](modules/02-app-shell/UX-02.md) | PERSONAL | IMPLEMENTED | EXTERNAL_BLOCKED | [Evidence](../docs/progress/UX-02.md): hồ sơ Room, onboarding/settings, app 7/7 + data 13/13 AVD, unit/lint/build PASS; connector live thiếu SDK/client ID |
 | [UX-03](modules/02-app-shell/UX-03.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
 | [PLAN-01](modules/03-planner/PLAN-01.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/PLAN-01.md): Room v4 migration, domain 10/10, data unit 9/9, AVD data 16/16, lint/APK PASS |
-| [PLAN-02](modules/03-planner/PLAN-02.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
+| [PLAN-02](modules/03-planner/PLAN-02.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/PLAN-02.md): CRUD planner offline, dashboard AVD smoke, domain 14/14, app Compose 12/12, data AVD 18/18, lint/APK PASS |
 | [PLAN-03](modules/03-planner/PLAN-03.md) | PERSONAL | TODO | NOT_RUN | Chưa có |
 | [PLAN-04](modules/03-planner/PLAN-04.md) | CONNECTED | TODO | NOT_RUN | Chưa có |
 | [FIN-01](modules/04-finance/FIN-01.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |

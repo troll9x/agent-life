@@ -63,15 +63,40 @@ data class CreateReminder(
     val triggerAt: Instant, val platformRequestId: String,
 )
 
+data class UpdateTask(
+    val workspaceId: Uuid, val id: Uuid, val expectedVersion: Long, val projectId: Uuid?,
+    val title: String, val note: String?, val priority: Int, val dueAt: Instant?, val recurrence: String?,
+)
+
+data class UpdateCalendarEvent(
+    val workspaceId: Uuid, val id: Uuid, val expectedVersion: Long, val title: String,
+    val timeKind: EventTimeKind, val eventZoneId: ZoneId,
+    val startAt: Instant? = null, val endAt: Instant? = null,
+    val startDate: LocalDate? = null, val endDateExclusive: LocalDate? = null,
+    val recurrence: String? = null,
+)
+
+data class ReplaceOccurrence(
+    val workspaceId: Uuid, val originDeviceId: Uuid, val exceptionId: Uuid,
+    val seriesId: Uuid, val originalDate: LocalDate, val replacement: CreateCalendarEvent,
+)
+
 interface PlannerRepository {
     fun observeTasks(workspaceId: Uuid): Flow<Outcome<List<PlannedTask>>>
+    fun observeProjects(workspaceId: Uuid): Flow<Outcome<List<Project>>>
+    fun observeEvents(workspaceId: Uuid): Flow<Outcome<List<CalendarEvent>>>
+    fun observeChecklist(workspaceId: Uuid, taskId: Uuid): Flow<Outcome<List<TaskChecklistItem>>>
+    fun observeExceptions(workspaceId: Uuid): Flow<Outcome<List<RecurrenceException>>>
     suspend fun createProject(command: CreateProject): Outcome<Project>
     suspend fun archiveProject(workspaceId: Uuid, projectId: Uuid, expectedVersion: Long): Outcome<Project>
     suspend fun createTask(command: CreateTask): Outcome<PlannedTask>
+    suspend fun updateTask(command: UpdateTask): Outcome<PlannedTask>
     suspend fun updateTaskState(workspaceId: Uuid, taskId: Uuid, expectedVersion: Long, state: TaskState): Outcome<PlannedTask>
     suspend fun addChecklistItem(command: CreateChecklistItem): Outcome<TaskChecklistItem>
     suspend fun setChecklistDone(workspaceId: Uuid, itemId: Uuid, expectedVersion: Long, done: Boolean): Outcome<TaskChecklistItem>
     suspend fun createEvent(command: CreateCalendarEvent): Outcome<CalendarEvent>
+    suspend fun updateEvent(command: UpdateCalendarEvent): Outcome<CalendarEvent>
+    suspend fun replaceOccurrence(command: ReplaceOccurrence): Outcome<CalendarEvent>
     suspend fun addRecurrenceException(command: CreateRecurrenceException): Outcome<RecurrenceException>
     suspend fun scheduleReminder(command: CreateReminder): Outcome<Reminder>
     suspend fun deleteTask(workspaceId: Uuid, taskId: Uuid, expectedVersion: Long): Outcome<Unit>

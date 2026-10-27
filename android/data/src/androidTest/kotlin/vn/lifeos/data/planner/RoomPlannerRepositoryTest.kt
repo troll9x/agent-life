@@ -21,6 +21,7 @@ import vn.lifeos.domain.common.RandomIdGenerator
 import vn.lifeos.domain.common.Uuid
 import vn.lifeos.domain.foundation.AppError
 import vn.lifeos.domain.foundation.CreatePersonalWorkspace
+import vn.lifeos.domain.foundation.RegisterConnection
 import vn.lifeos.domain.foundation.Outcome
 import vn.lifeos.domain.planner.*
 
@@ -102,6 +103,49 @@ class RoomPlannerRepositoryTest {
         assertEquals(1, (repo.eventsOnDate(w, date.plusDays(1), ZoneId.of("Asia/Ho_Chi_Minh")) as Outcome.Success).value.size)
         assertEquals(AppError.NotFound, (repo.createTask(CreateTask(id(303), w, d, id(999), "Wrong project")) as Outcome.Failure).error)
         assertEquals(AppError.NotFound, (repo.addChecklistItem(CreateChecklistItem(id(305), id(999), d, id(301), "Cross workspace", 0)) as Outcome.Failure).error)
+        db.close()
+    }
+
+    @Test fun editTaskAndOneOccurrencePersistAtomicallyWithoutDuplicates() = runBlocking {
+        val db = fixtureDb("planner-edit.db")
+        val repo = RoomPlannerRepository(db, clock)
+        val task = repo.createTask(CreateTask(id(401), w, d, null, "Draft")) as Outcome.Success
+        val edited = repo.updateTask(UpdateTask(w, task.value.id, task.value.version, null, "Edited", null, 2,
+            now.plusSeconds(3600), null)) as Outcome.Success
+        assertEquals("Edited", edited.value.title)
+        assertEquals(2L, edited.value.version)
+        val start = LocalDate.parse("2026-10-19")
+        val series = repo.createEvent(CreateCalendarEvent(id(402), w, d, "Series", EventTimeKind.ALL_DAY,
+            ZoneId.of("Asia/Ho_Chi_Minh"), startDate = start, endDateExclusive = start.plusDays(1),
+            recurrence = RecurrenceSpec(Frequency.DAILY, count = 3).encode())) as Outcome.Success
+        val replacement = CreateCalendarEvent(id(404), w, d, "Changed once", EventTimeKind.ALL_DAY,
+            ZoneId.of("Asia/Ho_Chi_Minh"), startDate = start.plusDays(1), endDateExclusive = start.plusDays(2))
+        val command = ReplaceOccurrence(w, d, id(403), series.value.id, start.plusDays(1), replacement)
+        assertTrue(repo.replaceOccurrence(command) is Outcome.Success)
+        assertEquals(AppError.Conflict, (repo.replaceOccurrence(command.copy(replacement = replacement.copy(id = id(405)))) as Outcome.Failure).error)
+        assertEquals(2, (repo.observeEvents(w).first() as Outcome.Success).value.size)
+        assertEquals(1, (repo.observeExceptions(w).first() as Outcome.Success).value.size)
+        db.close()
+        val reopened = Room.databaseBuilder(context, AgentLifeDatabase::class.java, "planner-edit.db").build()
+        val readBack = RoomPlannerRepository(reopened, clock)
+        assertEquals("Changed once", (readBack.observeEvents(w).first() as Outcome.Success).value.single { it.id == id(404) }.title)
+        assertEquals("Edited", (readBack.observeTasks(w).first() as Outcome.Success).value.single().title)
+        reopened.close()
+    }
+
+    @Test fun remoteEventCannotBeEditedLocally() = runBlocking {
+        val db = fixtureDb("planner-readonly.db")
+        val foundation = RoomFoundationRepository(db, clock, RandomIdGenerator)
+        assertTrue(foundation.registerConnection(RegisterConnection(id(501), w, id(502), d,
+            "CALENDAR", "fixture-account", null, setOf("read"), 1, "CONNECTED")) is Outcome.Success)
+        val repo = RoomPlannerRepository(db, clock)
+        val day = LocalDate.parse("2026-10-19")
+        val remote = repo.createEvent(CreateCalendarEvent(id(503), w, d, "Provider", EventTimeKind.ALL_DAY,
+            ZoneId.of("UTC"), startDate = day, endDateExclusive = day.plusDays(1),
+            sourceConnectionId = id(501), externalId = "fixture-event", readonly = true)) as Outcome.Success
+        val attempt = repo.updateEvent(UpdateCalendarEvent(w, remote.value.id, 1, "Changed", EventTimeKind.ALL_DAY,
+            ZoneId.of("UTC"), startDate = day, endDateExclusive = day.plusDays(1)))
+        assertEquals(AppError.Conflict, (attempt as Outcome.Failure).error)
         db.close()
     }
 }

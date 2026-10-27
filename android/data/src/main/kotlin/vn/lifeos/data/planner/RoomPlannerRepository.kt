@@ -11,6 +11,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import java.time.ZoneOffset
 import vn.lifeos.data.db.AgentLifeDatabase
 import vn.lifeos.domain.common.Uuid
 import vn.lifeos.domain.foundation.AppError
@@ -21,10 +22,28 @@ import vn.lifeos.domain.planner.*
 class RoomPlannerRepository(private val database: AgentLifeDatabase, private val clock: Clock) : PlannerRepository {
     private val dao = database.plannerDao()
 
+    suspend fun workspaceDeviceId(workspaceId: Uuid): Uuid? = dao.workspaceDeviceId(workspaceId.value)?.let(Uuid::parse)
+
     override fun observeTasks(workspaceId: Uuid): Flow<Outcome<List<PlannedTask>>> =
         dao.observeTasks(workspaceId.value).map<List<TaskEntity>, Outcome<List<PlannedTask>>> { rows ->
             Outcome.Success(rows.map(TaskEntity::toDomain))
         }.catch { if (it is CancellationException) throw it else emit(Outcome.Failure(AppError.Storage)) }
+
+    override fun observeProjects(workspaceId: Uuid): Flow<Outcome<List<Project>>> =
+        dao.observeProjects(workspaceId.value).map<List<ProjectEntity>, Outcome<List<Project>>> { Outcome.Success(it.map(ProjectEntity::toDomain)) }
+            .catch { if (it is CancellationException) throw it else emit(Outcome.Failure(AppError.Storage)) }
+
+    override fun observeEvents(workspaceId: Uuid): Flow<Outcome<List<CalendarEvent>>> =
+        dao.observeEvents(workspaceId.value).map<List<CalendarEventEntity>, Outcome<List<CalendarEvent>>> { Outcome.Success(it.map(CalendarEventEntity::toDomain)) }
+            .catch { if (it is CancellationException) throw it else emit(Outcome.Failure(AppError.Storage)) }
+
+    override fun observeChecklist(workspaceId: Uuid, taskId: Uuid): Flow<Outcome<List<TaskChecklistItem>>> =
+        dao.observeChecklist(workspaceId.value, taskId.value).map<List<TaskChecklistItemEntity>, Outcome<List<TaskChecklistItem>>> { Outcome.Success(it.map(TaskChecklistItemEntity::toDomain)) }
+            .catch { if (it is CancellationException) throw it else emit(Outcome.Failure(AppError.Storage)) }
+
+    override fun observeExceptions(workspaceId: Uuid): Flow<Outcome<List<RecurrenceException>>> =
+        dao.observeExceptions(workspaceId.value).map<List<RecurrenceExceptionEntity>, Outcome<List<RecurrenceException>>> { Outcome.Success(it.map(RecurrenceExceptionEntity::toDomain)) }
+            .catch { if (it is CancellationException) throw it else emit(Outcome.Failure(AppError.Storage)) }
 
     override suspend fun createProject(command: CreateProject): Outcome<Project> = write {
         if (command.title.isBlank()) return@write invalid("title")
@@ -46,7 +65,7 @@ class RoomPlannerRepository(private val database: AgentLifeDatabase, private val
     override suspend fun createTask(command: CreateTask): Outcome<PlannedTask> = write {
         if (command.title.isBlank()) return@write invalid("title")
         if (command.priority !in 1..4) return@write invalid("priority")
-        if (command.recurrence != null && command.recurrence !in LOCAL_RECURRENCES) return@write invalid("recurrence")
+        if (invalidRecurrence(command.recurrence, command.dueAt?.atZone(ZoneOffset.UTC)?.toLocalDate())) return@write invalid("recurrence")
         if (!actorExists(command.workspaceId, command.originDeviceId)) return@write Outcome.Failure(AppError.NotFound)
         val projectId = command.projectId
         if (projectId != null && dao.project(command.workspaceId.value, projectId.value) == null) return@write Outcome.Failure(AppError.NotFound)
@@ -56,6 +75,20 @@ class RoomPlannerRepository(private val database: AgentLifeDatabase, private val
             command.recurrence, command.sourceProposalId?.value, now, now, 1, command.originDeviceId.value)
         dao.insertTask(row)
         Outcome.Success(row.toDomain())
+    }
+
+    override suspend fun updateTask(command: UpdateTask): Outcome<PlannedTask> = write {
+        if (command.title.isBlank() || command.priority !in 1..4) return@write invalid("task")
+        if (invalidRecurrence(command.recurrence, command.dueAt?.atZone(ZoneOffset.UTC)?.toLocalDate())) return@write invalid("recurrence")
+        val before = dao.task(command.workspaceId.value, command.id.value) ?: return@write Outcome.Failure(AppError.NotFound)
+        val projectId = command.projectId
+        if (projectId != null && dao.project(command.workspaceId.value, projectId.value) == null) return@write Outcome.Failure(AppError.NotFound)
+        val now = clock.millis()
+        if (dao.updateTask(command.workspaceId.value, command.id.value, command.expectedVersion, projectId?.value,
+                command.title.trim(), command.note, command.priority, command.dueAt?.toEpochMilli(), command.recurrence, now) != 1) return@write Outcome.Failure(AppError.Conflict)
+        Outcome.Success(before.copy(projectId = projectId?.value, title = command.title.trim(), note = command.note,
+            priority = command.priority, dueAt = command.dueAt?.toEpochMilli(), recurrence = command.recurrence,
+            updatedAt = now, version = before.version + 1).toDomain())
     }
 
     override suspend fun addChecklistItem(command: CreateChecklistItem): Outcome<TaskChecklistItem> = write {
@@ -79,20 +112,12 @@ class RoomPlannerRepository(private val database: AgentLifeDatabase, private val
 
     override suspend fun createEvent(command: CreateCalendarEvent): Outcome<CalendarEvent> = write {
         if (command.title.isBlank()) return@write invalid("title")
-        val startDate = command.startDate
-        val endDateExclusive = command.endDateExclusive
-        val startAt = command.startAt
-        val endAt = command.endAt
-        when (command.timeKind) {
-            EventTimeKind.ALL_DAY -> if (startDate == null || endDateExclusive == null ||
-                !endDateExclusive.isAfter(startDate) || startAt != null || endAt != null) return@write invalid("eventTime")
-            EventTimeKind.TIMED -> if (startAt == null || endAt == null ||
-                !endAt.isAfter(startAt) || startDate != null || endDateExclusive != null) return@write invalid("eventTime")
-        }
+        if (!validEventTime(command.timeKind, command.startAt, command.endAt, command.startDate, command.endDateExclusive)) return@write invalid("eventTime")
         if ((command.sourceConnectionId == null) != (command.externalId == null) || command.externalId?.isBlank() == true) return@write invalid("source")
         if (command.sourceConnectionId == null && command.readonly) return@write invalid("readonly")
         if (command.sourceConnectionId != null && !command.readonly) return@write invalid("readonly")
-        if (command.sourceConnectionId == null && command.recurrence != null && command.recurrence !in LOCAL_RECURRENCES) return@write invalid("recurrence")
+        val firstDate = command.startDate ?: command.startAt?.atZone(command.eventZoneId)?.toLocalDate()
+        if (command.sourceConnectionId == null && invalidRecurrence(command.recurrence, firstDate)) return@write invalid("recurrence")
         if (!actorExists(command.workspaceId, command.originDeviceId)) return@write Outcome.Failure(AppError.NotFound)
         val sourceConnectionId = command.sourceConnectionId
         if (sourceConnectionId != null && !dao.connectionExists(command.workspaceId.value, sourceConnectionId.value)) return@write Outcome.Failure(AppError.NotFound)
@@ -104,6 +129,46 @@ class RoomPlannerRepository(private val database: AgentLifeDatabase, private val
             now, now, 1, command.originDeviceId.value)
         dao.insertEvent(row)
         Outcome.Success(row.toDomain())
+    }
+
+    override suspend fun updateEvent(command: UpdateCalendarEvent): Outcome<CalendarEvent> = write {
+        val before = dao.event(command.workspaceId.value, command.id.value) ?: return@write Outcome.Failure(AppError.NotFound)
+        if (before.readonly) return@write Outcome.Failure(AppError.Conflict)
+        if (command.title.isBlank()) return@write invalid("title")
+        if (!validEventTime(command.timeKind, command.startAt, command.endAt, command.startDate, command.endDateExclusive)) return@write invalid("eventTime")
+        val firstDate = command.startDate ?: command.startAt?.atZone(command.eventZoneId)?.toLocalDate()
+        if (invalidRecurrence(command.recurrence, firstDate)) return@write invalid("recurrence")
+        val now = clock.millis()
+        if (dao.updateEvent(command.workspaceId.value, command.id.value, command.expectedVersion, command.title.trim(),
+                command.timeKind.name, command.startAt?.toEpochMilli(), command.endAt?.toEpochMilli(),
+                command.startDate?.toString(), command.endDateExclusive?.toString(), command.eventZoneId.id,
+                command.recurrence, now) != 1) return@write Outcome.Failure(AppError.Conflict)
+        Outcome.Success(before.copy(title = command.title.trim(), timeKind = command.timeKind.name,
+            startAt = command.startAt?.toEpochMilli(), endAt = command.endAt?.toEpochMilli(),
+            startDate = command.startDate?.toString(), endDateExclusive = command.endDateExclusive?.toString(),
+            eventZoneId = command.eventZoneId.id, recurrence = command.recurrence, updatedAt = now,
+            version = before.version + 1).toDomain())
+    }
+
+    override suspend fun replaceOccurrence(command: ReplaceOccurrence): Outcome<CalendarEvent> = write {
+        val series = dao.event(command.workspaceId.value, command.seriesId.value) ?: return@write Outcome.Failure(AppError.NotFound)
+        if (series.readonly || series.recurrence == null) return@write Outcome.Failure(AppError.Conflict)
+        val firstDate = series.startDate?.let(LocalDate::parse)
+            ?: Instant.ofEpochMilli(series.startAt!!).atZone(ZoneId.of(series.eventZoneId)).toLocalDate()
+        val spec = RecurrenceSpec.parse(series.recurrence) ?: return@write invalid("recurrence")
+        if (command.originalDate.isBefore(firstDate) || command.originalDate.isAfter(firstDate.plusYears(5))) return@write invalid("originalDate")
+        if (boundedOccurrences(command.seriesId, firstDate, spec, command.originalDate, command.originalDate.plusDays(1)).isEmpty()) return@write invalid("originalDate")
+        val replacement = command.replacement
+        if (replacement.workspaceId != command.workspaceId || replacement.originDeviceId != command.originDeviceId ||
+            replacement.recurrence != null || replacement.sourceConnectionId != null || replacement.readonly) return@write invalid("replacement")
+        val created = createEvent(replacement)
+        if (created !is Outcome.Success) return@write created
+        val now = clock.millis()
+        dao.insertException(RecurrenceExceptionEntity(command.exceptionId.value, command.workspaceId.value,
+            command.seriesId.value, occurrenceKey(command.seriesId, command.originalDate),
+            "{\"schemaVersion\":1,\"replacementEventId\":\"${replacement.id.value}\"}", true,
+            now, now, 1, command.originDeviceId.value))
+        created
     }
 
     override suspend fun addRecurrenceException(command: CreateRecurrenceException): Outcome<RecurrenceException> = write {
@@ -181,7 +246,19 @@ class RoomPlannerRepository(private val database: AgentLifeDatabase, private val
 
     private fun <T> invalid(field: String): Outcome<T> = Outcome.Failure(AppError.InvalidInput(field))
 
-    private companion object { val LOCAL_RECURRENCES = setOf("DAILY", "WEEKLY", "MONTHLY") }
+    private fun validEventTime(kind: EventTimeKind, startAt: Instant?, endAt: Instant?, startDate: LocalDate?, endDateExclusive: LocalDate?): Boolean =
+        when (kind) {
+            EventTimeKind.ALL_DAY -> startDate != null && endDateExclusive != null && endDateExclusive.isAfter(startDate) && startAt == null && endAt == null
+            EventTimeKind.TIMED -> startAt != null && endAt != null && endAt.isAfter(startAt) && startDate == null && endDateExclusive == null
+        }
+
+    private fun validRecurrence(value: String, firstDate: LocalDate): Boolean {
+        val spec = RecurrenceSpec.parse(value) ?: return false
+        return spec.untilInclusive?.let { !it.isBefore(firstDate) && !it.isAfter(firstDate.plusYears(5)) } ?: true
+    }
+
+    private fun invalidRecurrence(value: String?, firstDate: LocalDate?): Boolean =
+        value != null && (firstDate == null || !validRecurrence(value, firstDate))
 }
 
 private fun ProjectEntity.toDomain() = Project(Uuid.parse(id), Uuid.parse(workspaceId), title, color, archivedAt?.let(Instant::ofEpochMilli), version)

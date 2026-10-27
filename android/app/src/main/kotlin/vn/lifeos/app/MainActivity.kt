@@ -31,6 +31,7 @@ class MainActivity : ComponentActivity() {
                     onThemeChange = shellViewModel::setDarkTheme,
                     onCompleteOnboarding = shellViewModel::completeOnboarding,
                     onUpdateProfile = shellViewModel::updateProfile,
+                    plannerActions = shellViewModel,
                 )
             }
         }

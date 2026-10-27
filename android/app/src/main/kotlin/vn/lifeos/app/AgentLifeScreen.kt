@@ -44,6 +44,10 @@ import kotlinx.serialization.Serializable
 import vn.lifeos.app.onboarding.OnboardingScreen
 import vn.lifeos.app.settings.ProfileSettingsScreen
 import vn.lifeos.data.profile.ProfileInput
+import vn.lifeos.app.planner.PlannerActions
+import vn.lifeos.app.planner.PlannerDashboard
+import vn.lifeos.app.planner.PlannerScreen
+import java.time.ZoneId
 
 @Serializable internal data object TodayRoute
 @Serializable internal data object WorkRoute
@@ -70,6 +74,7 @@ internal fun AgentLifeScreen(
     onThemeChange: (Boolean) -> Unit,
     onCompleteOnboarding: (ProfileInput) -> Unit = {},
     onUpdateProfile: (ProfileInput) -> Unit = {},
+    plannerActions: PlannerActions? = null,
 ) {
     Surface(Modifier.fillMaxSize()) {
         when (state.startup) {
@@ -107,7 +112,7 @@ internal fun AgentLifeScreen(
                 )
                 is ProfileStatus.Ready -> AppShell(
                     state.online, state.darkTheme, profile.snapshot, state.now,
-                    state.profileAction, onThemeChange, onUpdateProfile,
+                    state.profileAction, state.planner, plannerActions, onThemeChange, onUpdateProfile,
                 )
             }
         }
@@ -122,6 +127,8 @@ private fun AppShell(
     snapshot: vn.lifeos.data.profile.LocalProfileSnapshot,
     now: java.time.Instant,
     action: ProfileAction,
+    planner: vn.lifeos.app.planner.PlannerUiState,
+    plannerActions: PlannerActions?,
     onThemeChange: (Boolean) -> Unit,
     onUpdateProfile: (ProfileInput) -> Unit,
 ) {
@@ -195,8 +202,10 @@ private fun AppShell(
             Column(Modifier.fillMaxSize().padding(padding)) {
                 if (!online) OfflineState()
                 NavHost(navController, startDestination = TodayRoute, modifier = Modifier.weight(1f)) {
-                    composable<TodayRoute> { AreaScreen(Area.Today) }
-                    composable<WorkRoute> { AreaScreen(Area.Work) }
+                    composable<TodayRoute> {
+                        PlannerDashboard(planner, now, ZoneId.of(snapshot.profile.zoneId), plannerActions) { navController.navigate(WorkRoute) }
+                    }
+                    composable<WorkRoute> { PlannerScreen(planner, now, ZoneId.of(snapshot.profile.zoneId), plannerActions) }
                     composable<FinanceRoute> { AreaScreen(Area.Finance) }
                     composable<HealthRoute> { AreaScreen(Area.Health) }
                     composable<NewsRoute> { AreaScreen(Area.News) }

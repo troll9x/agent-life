@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PlannerDao {
+    @Query("SELECT originDeviceId FROM workspaces WHERE id=:workspaceId AND deletedAt IS NULL")
+    suspend fun workspaceDeviceId(workspaceId: String): String?
     @Query("SELECT EXISTS(SELECT 1 FROM workspaces WHERE id=:workspaceId AND deletedAt IS NULL)")
     suspend fun workspaceExists(workspaceId: String): Boolean
 
@@ -15,6 +17,9 @@ interface PlannerDao {
 
     @Query("SELECT * FROM projects WHERE workspaceId=:workspaceId AND id=:id AND deletedAt IS NULL")
     suspend fun project(workspaceId: String, id: String): ProjectEntity?
+
+    @Query("SELECT * FROM projects WHERE workspaceId=:workspaceId AND deletedAt IS NULL ORDER BY title, id")
+    fun observeProjects(workspaceId: String): Flow<List<ProjectEntity>>
 
     @Query("UPDATE projects SET archivedAt=:now, updatedAt=:now, version=version+1 WHERE workspaceId=:workspaceId AND id=:projectId AND version=:expectedVersion AND deletedAt IS NULL AND archivedAt IS NULL")
     suspend fun archiveProject(workspaceId: String, projectId: String, expectedVersion: Long, now: Long): Int
@@ -27,6 +32,12 @@ interface PlannerDao {
 
     @Query("SELECT * FROM calendar_events WHERE workspaceId=:workspaceId AND id=:id AND deletedAt IS NULL")
     suspend fun event(workspaceId: String, id: String): CalendarEventEntity?
+
+    @Query("SELECT * FROM calendar_events WHERE workspaceId=:workspaceId AND deletedAt IS NULL ORDER BY startDate, startAt, id")
+    fun observeEvents(workspaceId: String): Flow<List<CalendarEventEntity>>
+
+    @Query("SELECT * FROM recurrence_exceptions WHERE workspaceId=:workspaceId AND deletedAt IS NULL ORDER BY seriesId, originalOccurrenceKey")
+    fun observeExceptions(workspaceId: String): Flow<List<RecurrenceExceptionEntity>>
 
     @Query("SELECT EXISTS(SELECT 1 FROM integration_connections WHERE workspaceId=:workspaceId AND id=:id AND deletedAt IS NULL)")
     suspend fun connectionExists(workspaceId: String, id: String): Boolean
@@ -43,6 +54,15 @@ interface PlannerDao {
 
     @Query("SELECT task_checklist_items.* FROM task_checklist_items INNER JOIN tasks ON tasks.workspaceId=task_checklist_items.workspaceId AND tasks.id=task_checklist_items.taskId WHERE task_checklist_items.workspaceId=:workspaceId AND task_checklist_items.taskId=:taskId AND task_checklist_items.deletedAt IS NULL AND tasks.deletedAt IS NULL ORDER BY sortOrder, task_checklist_items.id")
     suspend fun checklist(workspaceId: String, taskId: String): List<TaskChecklistItemEntity>
+
+    @Query("SELECT task_checklist_items.* FROM task_checklist_items INNER JOIN tasks ON tasks.workspaceId=task_checklist_items.workspaceId AND tasks.id=task_checklist_items.taskId WHERE task_checklist_items.workspaceId=:workspaceId AND task_checklist_items.taskId=:taskId AND task_checklist_items.deletedAt IS NULL AND tasks.deletedAt IS NULL ORDER BY sortOrder, task_checklist_items.id")
+    fun observeChecklist(workspaceId: String, taskId: String): Flow<List<TaskChecklistItemEntity>>
+
+    @Query("UPDATE tasks SET projectId=:projectId, title=:title, note=:note, priority=:priority, dueAt=:dueAt, recurrence=:recurrence, updatedAt=:now, version=version+1 WHERE workspaceId=:workspaceId AND id=:id AND version=:expectedVersion AND deletedAt IS NULL")
+    suspend fun updateTask(workspaceId: String, id: String, expectedVersion: Long, projectId: String?, title: String, note: String?, priority: Int, dueAt: Long?, recurrence: String?, now: Long): Int
+
+    @Query("UPDATE calendar_events SET title=:title, timeKind=:timeKind, startAt=:startAt, endAt=:endAt, startDate=:startDate, endDateExclusive=:endDateExclusive, eventZoneId=:eventZoneId, recurrence=:recurrence, updatedAt=:now, version=version+1 WHERE workspaceId=:workspaceId AND id=:id AND version=:expectedVersion AND deletedAt IS NULL AND readonly=0")
+    suspend fun updateEvent(workspaceId: String, id: String, expectedVersion: Long, title: String, timeKind: String, startAt: Long?, endAt: Long?, startDate: String?, endDateExclusive: String?, eventZoneId: String, recurrence: String?, now: Long): Int
 
     @Query("SELECT * FROM tasks WHERE workspaceId=:workspaceId AND deletedAt IS NULL AND dueAt IS NOT NULL AND dueAt<:endExclusive AND state NOT IN ('DONE','CANCELLED') ORDER BY dueAt, id")
     suspend fun tasksDueBefore(workspaceId: String, endExclusive: Long): List<TaskEntity>

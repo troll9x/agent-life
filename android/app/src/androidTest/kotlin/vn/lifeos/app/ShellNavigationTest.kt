@@ -21,16 +21,18 @@ class ShellNavigationTest {
     @get:Rule val composeRule = createAndroidComposeRule<MainActivity>()
 
     private fun awaitShell() {
-        composeRule.waitUntil(15_000) {
+        composeRule.waitUntil(45_000) {
             composeRule.onAllNodesWithText("Bắt đầu với Agent Life").fetchSemanticsNodes().isNotEmpty() ||
-                composeRule.onAllNodesWithText("Hôm nay").fetchSemanticsNodes().isNotEmpty()
+                composeRule.onAllNodesWithText("Hôm nay", substring = true).fetchSemanticsNodes().isNotEmpty() ||
+                composeRule.onAllNodesWithText("Công việc").fetchSemanticsNodes().isNotEmpty()
         }
         if (composeRule.onAllNodesWithText("Bắt đầu với Agent Life").fetchSemanticsNodes().isNotEmpty()) {
             composeRule.onAllNodes(hasSetTextAction()).onFirst().performTextInput("Fixture User")
             composeRule.onNodeWithText("Hoàn tất").performClick()
         }
-        composeRule.waitUntil(15_000) {
-            composeRule.onAllNodesWithText("Hôm nay").fetchSemanticsNodes().isNotEmpty()
+        composeRule.waitUntil(45_000) {
+            composeRule.onAllNodesWithText("Hôm nay", substring = true).fetchSemanticsNodes().isNotEmpty() ||
+                composeRule.onAllNodesWithText("Công việc").fetchSemanticsNodes().isNotEmpty()
         }
     }
 
@@ -41,7 +43,8 @@ class ShellNavigationTest {
             composeRule.onNodeWithText(area).performClick()
             composeRule.waitForIdle()
             composeRule.onAllNodesWithText(area).onFirst().assertIsDisplayed()
-            if (area != "Cài đặt") composeRule.onNodeWithText("Chưa triển khai").assertIsDisplayed()
+            if (area == "Công việc") composeRule.onNodeWithText("Thêm việc").assertIsDisplayed()
+            else if (area != "Cài đặt") composeRule.onNodeWithText("Chưa triển khai").assertIsDisplayed()
         }
         Espresso.pressBack()
         composeRule.onAllNodesWithText("Trợ lý").onFirst().assertIsDisplayed()

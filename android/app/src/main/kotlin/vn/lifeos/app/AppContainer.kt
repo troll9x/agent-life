@@ -14,6 +14,10 @@ import vn.lifeos.data.security.EncryptedDatabaseProvider
 import vn.lifeos.data.db.AgentLifeDatabase
 import vn.lifeos.data.profile.LocalProfileStore
 import vn.lifeos.domain.common.RandomIdGenerator
+import vn.lifeos.domain.common.Uuid
+import vn.lifeos.data.planner.RoomPlannerRepository
+import vn.lifeos.app.planner.PlannerFeature
+import kotlinx.coroutines.CoroutineScope
 
 /** Composition root. UI receives state from a ViewModel, never a database handle. */
 class AppContainer(context: Context, databaseProvider: EncryptedDatabaseProvider) {
@@ -24,6 +28,11 @@ class AppContainer(context: Context, databaseProvider: EncryptedDatabaseProvider
     val networkStatus: Flow<Boolean> = NetworkStatusRepository(context.applicationContext).online
     fun profileStore(database: AgentLifeDatabase): LocalProfileStore =
         LocalProfileStore(database, applicationContext, clock, RandomIdGenerator)
+    internal suspend fun plannerFeature(database: AgentLifeDatabase, workspaceId: Uuid, scope: CoroutineScope): PlannerFeature? {
+        val repository = RoomPlannerRepository(database, clock)
+        val deviceId = repository.workspaceDeviceId(workspaceId) ?: return null
+        return PlannerFeature(repository, workspaceId, deviceId, RandomIdGenerator, clock, scope)
+    }
 }
 
 fun interface StartupRepository {
