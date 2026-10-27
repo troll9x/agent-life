@@ -1,5 +1,6 @@
 package vn.lifeos.app
 
+import android.widget.TimePicker
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -16,6 +17,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import java.time.Instant
 import java.time.ZoneId
 import org.junit.Assert.assertEquals
@@ -96,6 +103,27 @@ class PlannerUiTest {
         composeRule.onNodeWithText("Lặp: Hằng ngày").performClick()
         composeRule.onNodeWithText("Lặp: Hằng tuần").performClick()
         composeRule.onNodeWithText("Ngày 31:", substring = true).performScrollTo().assertIsDisplayed()
+    }
+
+    @Test fun taskDuePickerPassesSelectedDateAndTimeToAction() {
+        var selectedDue: Instant? = null
+        val actions = object : StubPlannerActions() {
+            override fun createTask(title: String, note: String?, projectId: Uuid?, priority: Int, dueAt: Instant?, recurrence: String?) {
+                selectedDue = dueAt
+            }
+        }
+        composeRule.setContent { PlannerScreen(PlannerUiState(loading = false),
+            Instant.parse("2026-10-19T02:00:00Z"), zone, actions) }
+        composeRule.onNodeWithText("Thêm việc").performClick()
+        composeRule.onNodeWithTag("task_title").performTextInput("Fixture Picker")
+        composeRule.onNodeWithText("Hạn:", substring = true).performScrollTo().performClick()
+        onView(withId(android.R.id.button1)).perform(click())
+        onView(isAssignableFrom(TimePicker::class.java)).check(matches(isDisplayed()))
+        onView(withId(android.R.id.button1)).perform(click())
+        composeRule.waitUntil(10_000) { composeRule.onAllNodesWithText("Hạn: 2026-10-19 09:00").fetchSemanticsNodes().isNotEmpty() }
+        composeRule.onNodeWithText("Lưu").performClick()
+        composeRule.waitForIdle()
+        assertEquals(Instant.parse("2026-10-19T02:00:00Z"), selectedDue)
     }
 
     @Test fun editingOneOccurrenceDispatchesExceptionAction() {

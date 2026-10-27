@@ -42,6 +42,7 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import vn.lifeos.app.onboarding.OnboardingScreen
+import vn.lifeos.app.onboarding.NotificationStartPrompt
 import vn.lifeos.app.settings.ProfileSettingsScreen
 import vn.lifeos.data.profile.ProfileInput
 import vn.lifeos.app.planner.PlannerActions
@@ -132,6 +133,7 @@ private fun AppShell(
     onThemeChange: (Boolean) -> Unit,
     onUpdateProfile: (ProfileInput) -> Unit,
 ) {
+    NotificationStartPrompt()
     val navController = rememberNavController()
     val entry by navController.currentBackStackEntryAsState()
     val destination = entry?.destination

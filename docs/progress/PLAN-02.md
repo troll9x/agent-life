@@ -57,3 +57,9 @@ CI GitHub Actions cho commit `86bdf7303cb78002547cd157fc6c27bc3cf98f9b`: [Androi
 ## Bàn giao
 
 - Task tiếp theo sẵn sàng: **PLAN-03** vì PLAN-02 và DATA-02 đã có code/hợp đồng. Không triển khai PLAN-03 trong lượt này.
+
+## Bổ sung theo phản hồi ngày 27/10/2026
+
+- Thay ô nhập chuỗi ngày/giờ ở bộ lọc việc, hạn việc, lịch ngày, sự kiện cả ngày/có giờ và ngày kết thúc lặp bằng DatePickerDialog/TimePickerDialog của Android. Trường tùy chọn có nút Bỏ chọn. Giá trị chọn vẫn đi qua validation và múi giờ của hồ sơ/sự kiện hiện có; không đổi contract hay schema.
+- `PlannerUiTest.taskDuePickerPassesSelectedDateAndTimeToAction` trên emulator thử nghiệm riêng API 37 đã mở cả hộp chọn ngày và giờ, chọn mặc định 19/10/2026 09:00 Asia/Ho_Chi_Minh và xác nhận action nhận `2026-10-19T02:00:00Z`. Nhóm UI liên quan PLAN-02, UX-02 và shell: 12/12 PASS bằng `adb -s emulator-5556 shell am instrument -w -e class 'vn.lifeos.app.PlannerUiTest,vn.lifeos.app.OnboardingPermissionTest,vn.lifeos.app.ShellNavigationTest' vn.lifeos.app.test/androidx.test.runner.AndroidJUnitRunner`.
+- `:app:testDebugUnitTest :app:assembleDebug :app:lintDebug :app:assembleDebugAndroidTest` exit 0; app unit 4/4. Test UI chỉ dùng AVD `AgentLife_Isolated_Test_API_37`, không gỡ app hoặc dữ liệu trên AVD thường dùng `emulator-5554`. RQ-PLAN-02-01/02 vẫn PASS; thay đổi này cải thiện thao tác nhập thời gian.

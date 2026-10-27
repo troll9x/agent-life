@@ -7,7 +7,9 @@
     <string name="budget_start_day">Ngày đầu kỳ ngân sách</string>
     <string name="day_range">Chọn ngày từ 1 đến 28.</string>
     <string name="notifications_optional">Thông báo (tùy chọn)</string>
-    <string name="notifications_explain">Chỉ yêu cầu quyền khi bạn chọn bật. Từ chối vẫn dùng được ứng dụng.</string>
+    <string name="notifications_explain">Bạn có thể bật ở đây hoặc khi bắt đầu dùng ứng dụng. Từ chối vẫn dùng được ứng dụng.</string>
+    <string name="notifications_start_explain">Cho phép Agent Life gửi thông báo nhắc việc? Bạn vẫn dùng được ứng dụng nếu để sau hoặc từ chối. Có thể xem trạng thái trong Cài đặt.</string>
+    <string name="later">Để sau</string>
     <string name="enable_notifications">Bật thông báo</string>
     <string name="permission_granted">Đã cấp quyền thông báo</string>
     <string name="permission_denied">Đã từ chối. Bạn có thể bật lại trong cài đặt hệ thống; ứng dụng sẽ không tự hỏi lại.</string>

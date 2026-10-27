@@ -116,7 +116,7 @@ private fun TaskPanel(state: PlannerUiState, now: Instant, zone: ZoneId, actions
             FilterChip(!done, onClick = { done = false }, label = { Text("Đang làm") })
             FilterChip(done, onClick = { done = true }, label = { Text("Hoàn tất") })
         }
-        OutlinedTextField(date, { date = it }, label = { Text("Lọc ngày (yyyy-MM-dd), để trống = tất cả") }, singleLine = true)
+        PlannerDatePicker("Lọc ngày", date, now.atZone(zone).toLocalDate(), optional = true) { date = it }
         TextButton(onClick = { projectIndex = (projectIndex + 1) % (projects.size + 1) }) {
             Text("Dự án: ${selectedProject?.title ?: "Tất cả"}")
         }
@@ -139,7 +139,7 @@ private fun TaskPanel(state: PlannerUiState, now: Instant, zone: ZoneId, actions
             }
         }
     }
-    if (creating || edit != null) TaskEditor(state, edit, projects, zone, actions,
+    if (creating || edit != null) TaskEditor(state, edit, projects, now, zone, actions,
         onDismiss = { creating = false; edit = null })
     if (showProject) ProjectEditor(state, actions) { showProject = false }
     checklistTask?.let { task -> ChecklistEditor(state, task, actions) {
@@ -159,7 +159,7 @@ private fun ProjectEditor(state: PlannerUiState, actions: PlannerActions?, onDis
 }
 
 @Composable
-private fun TaskEditor(state: PlannerUiState, task: PlannedTask?, projects: List<Project>, zone: ZoneId,
+private fun TaskEditor(state: PlannerUiState, task: PlannedTask?, projects: List<Project>, now: Instant, zone: ZoneId,
     actions: PlannerActions?, onDismiss: () -> Unit) {
     var title by remember(task?.id) { mutableStateOf(task?.title ?: "") }
     var note by remember(task?.id) { mutableStateOf(task?.note ?: "") }
@@ -181,13 +181,14 @@ private fun TaskEditor(state: PlannerUiState, task: PlannedTask?, projects: List
             Column(Modifier.heightIn(max = 460.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(title, { title = it }, label = { Text("Tên việc") }, modifier = Modifier.testTag("task_title"))
                 OutlinedTextField(note, { note = it }, label = { Text("Ghi chú") })
-                OutlinedTextField(due, { due = it }, label = { Text("Hạn (yyyy-MM-dd HH:mm), tùy chọn") })
+                PlannerDateTimePicker("Hạn", due, now.atZone(zone).toLocalDateTime(), optional = true) { due = it }
                 if (due.isNotBlank() && dueAt == null) Text("Ngày/giờ không hợp lệ.", color = MaterialTheme.colorScheme.error)
                 TextButton(onClick = { projectIndex = (projectIndex + 1) % (projects.size + 1) }) {
                     Text("Dự án: ${projects.getOrNull(projectIndex - 1)?.title ?: "Không có"}")
                 }
                 TextButton(onClick = { priority = if (priority == 4) 1 else priority + 1 }) { Text("Ưu tiên: $priority") }
-                RecurrenceFields(frequency, { frequency = it }, interval, { interval = it }, until, { until = it }, count, { count = it })
+                RecurrenceFields(frequency, { frequency = it }, interval, { interval = it }, until, { until = it }, count, { count = it },
+                    dueAt?.atZone(zone)?.toLocalDate() ?: now.atZone(zone).toLocalDate())
                 if (frequency != "NONE" && rule == null) Text("Quy tắc lặp chưa hợp lệ hoặc chưa hỗ trợ.", color = MaterialTheme.colorScheme.error)
             }
         },
@@ -225,14 +226,14 @@ internal fun parseRule(frequency: String, interval: String, until: String, count
 
 @Composable
 internal fun RecurrenceFields(frequency: String, onFrequency: (String) -> Unit, interval: String, onInterval: (String) -> Unit,
-    until: String, onUntil: (String) -> Unit, count: String, onCount: (String) -> Unit) {
+    until: String, onUntil: (String) -> Unit, count: String, onCount: (String) -> Unit, fallback: LocalDate) {
     TextButton(onClick = {
         val choices = listOf("NONE", "DAILY", "WEEKLY", "MONTHLY")
         onFrequency(choices[(choices.indexOf(frequency) + 1) % choices.size])
     }) { Text("Lặp: ${mapOf("NONE" to "Không", "DAILY" to "Hằng ngày", "WEEKLY" to "Hằng tuần", "MONTHLY" to "Hằng tháng")[frequency]}") }
     if (frequency != "NONE") {
         OutlinedTextField(interval, onInterval, label = { Text("Mỗi bao nhiêu chu kỳ (1–30)") }, singleLine = true)
-        OutlinedTextField(until, onUntil, label = { Text("Đến ngày (yyyy-MM-dd), tùy chọn") }, singleLine = true)
+        PlannerDatePicker("Đến ngày", until, fallback, optional = true, onChange = onUntil)
         OutlinedTextField(count, onCount, label = { Text("Hoặc số lần (1–366)") }, singleLine = true)
         Text("Chọn một cách kết thúc: đến ngày (trong 5 năm) hoặc số lần.")
         if (frequency == "MONTHLY") Text("Ngày 31: bỏ tháng không có ngày 31; không dời sang ngày khác.")

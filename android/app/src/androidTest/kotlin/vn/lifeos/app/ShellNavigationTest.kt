@@ -34,6 +34,9 @@ class ShellNavigationTest {
             composeRule.onAllNodesWithText("Hôm nay", substring = true).fetchSemanticsNodes().isNotEmpty() ||
                 composeRule.onAllNodesWithText("Công việc").fetchSemanticsNodes().isNotEmpty()
         }
+        if (composeRule.onAllNodesWithText("Để sau").fetchSemanticsNodes().isNotEmpty()) {
+            composeRule.onNodeWithText("Để sau").performClick()
+        }
     }
 
     @Test fun opensAllAreasAndBackReturnsToPreviousArea() {
@@ -43,7 +46,10 @@ class ShellNavigationTest {
             composeRule.onNodeWithText(area).performClick()
             composeRule.waitForIdle()
             composeRule.onAllNodesWithText(area).onFirst().assertIsDisplayed()
-            if (area == "Công việc") composeRule.onNodeWithText("Thêm việc").assertIsDisplayed()
+            if (area == "Công việc") {
+                composeRule.waitUntil(45_000) { composeRule.onAllNodesWithText("Thêm việc").fetchSemanticsNodes().isNotEmpty() }
+                composeRule.onNodeWithText("Thêm việc").assertIsDisplayed()
+            }
             else if (area != "Cài đặt") composeRule.onNodeWithText("Chưa triển khai").assertIsDisplayed()
         }
         Espresso.pressBack()

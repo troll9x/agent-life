@@ -1,8 +1,6 @@
 package vn.lifeos.app.onboarding
 
 import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -65,15 +63,16 @@ internal fun OnboardingScreen(saving: Boolean, failed: Boolean, onComplete: (Pro
 @Composable
 internal fun NotificationPermissionOption() {
     val context = LocalContext.current
-    var denied by rememberSaveable { mutableStateOf(false) }
-    var granted by rememberSaveable { mutableStateOf(
-        Build.VERSION.SDK_INT < 33 || context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-    ) }
+    var granted by rememberSaveable { mutableStateOf(notificationPermissionGranted(context)) }
+    var denied by rememberSaveable { mutableStateOf(notificationRequestAttempted(context) && !granted) }
     val request = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { accepted ->
         granted = accepted
         denied = !accepted
     }
-    NotificationPermissionContent(granted, denied) { request.launch(Manifest.permission.POST_NOTIFICATIONS) }
+    NotificationPermissionContent(granted, denied) {
+        markNotificationRequestAttempted(context)
+        request.launch(Manifest.permission.POST_NOTIFICATIONS)
+    }
 }
 
 @Composable

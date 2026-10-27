@@ -69,7 +69,7 @@ internal fun CalendarPanel(state: PlannerUiState, now: Instant, profileZone: Zon
             TextButton(onClick = { selected = day.minusDays(if (week) 7 else 1).toString() }) { Text("‹ Trước") }
             TextButton(onClick = { selected = day.plusDays(if (week) 7 else 1).toString() }) { Text("Sau ›") }
         }
-        OutlinedTextField(selected, { selected = it }, label = { Text("Ngày (yyyy-MM-dd)") }, singleLine = true)
+        PlannerDatePicker("Ngày", selected, day) { selected = it }
         Text("$from → ${end.minusDays(1)} · ${profileZone.id}")
         if (state.events.any { event -> event.recurrence?.let { RecurrenceSpec.parse(it) == null } == true }) {
             Text("Có lịch từ nguồn ngoài dùng quy tắc lặp chưa hỗ trợ; app không tự tạo các lần lặp đó.",
@@ -158,14 +158,15 @@ private fun EventEditor(state: PlannerUiState, target: EditorTarget, selectedDat
             Row { Text("Cả ngày", modifier = Modifier.padding(top = 12.dp)); Switch(allDay, { allDay = it; confirmOverlap = false }) }
             OutlinedTextField(zoneText, { zoneText = it; confirmOverlap = false }, label = { Text("Múi giờ") })
             if (allDay) {
-                OutlinedTextField(startDate, { startDate = it; confirmOverlap = false }, label = { Text("Từ ngày (yyyy-MM-dd)") })
-                OutlinedTextField(endDate, { endDate = it; confirmOverlap = false }, label = { Text("Đến trước ngày (yyyy-MM-dd)") })
+                PlannerDatePicker("Từ ngày", startDate, selectedDate) { startDate = it; confirmOverlap = false }
+                PlannerDatePicker("Đến trước ngày", endDate, selectedDate.plusDays(1)) { endDate = it; confirmOverlap = false }
             } else {
-                OutlinedTextField(startTime, { startTime = it; confirmOverlap = false }, label = { Text("Bắt đầu (yyyy-MM-dd HH:mm)") })
-                OutlinedTextField(endTime, { endTime = it; confirmOverlap = false }, label = { Text("Kết thúc (yyyy-MM-dd HH:mm)") })
+                PlannerDateTimePicker("Bắt đầu", startTime, selectedDate.atTime(9, 0)) { startTime = it; confirmOverlap = false }
+                PlannerDateTimePicker("Kết thúc", endTime, selectedDate.atTime(10, 0)) { endTime = it; confirmOverlap = false }
             }
             if (!editOne) RecurrenceFields(frequency, { frequency = it; confirmOverlap = false }, interval, { interval = it; confirmOverlap = false },
-                until, { until = it; confirmOverlap = false }, count, { count = it; confirmOverlap = false })
+                until, { until = it; confirmOverlap = false }, count, { count = it; confirmOverlap = false },
+                firstDate ?: start?.atZone(zone)?.toLocalDate() ?: selectedDate)
             if (!valid) Text("Kiểm tra tên, khoảng thời gian, múi giờ và quy tắc lặp. Rule khác DAILY/WEEKLY/MONTHLY chưa hỗ trợ.", color = MaterialTheme.colorScheme.error)
             if (overlaps.isNotEmpty()) Text("Trùng lịch với ${overlaps.joinToString { it.title }}. Có thể sửa giờ hoặc chọn vẫn lưu; app không tự dời lịch.",
                 color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("overlap_warning"))
