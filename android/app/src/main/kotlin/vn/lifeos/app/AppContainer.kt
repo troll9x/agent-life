@@ -19,6 +19,8 @@ import vn.lifeos.data.planner.RoomPlannerRepository
 import vn.lifeos.app.planner.PlannerFeature
 import kotlinx.coroutines.CoroutineScope
 import vn.lifeos.app.reminders.ReminderEngine
+import vn.lifeos.data.finance.RoomFinanceRepository
+import vn.lifeos.domain.finance.FinanceRepository
 
 /** Composition root. UI receives state from a ViewModel, never a database handle. */
 class AppContainer(context: Context, databaseProvider: EncryptedDatabaseProvider) {
@@ -32,6 +34,8 @@ class AppContainer(context: Context, databaseProvider: EncryptedDatabaseProvider
         reminders ?: ReminderEngine(applicationContext, database, clock).also { reminders = it }
     fun profileStore(database: AgentLifeDatabase): LocalProfileStore =
         LocalProfileStore(database, applicationContext, clock, RandomIdGenerator)
+    fun financeRepository(database: AgentLifeDatabase): FinanceRepository =
+        RoomFinanceRepository(database, clock, RandomIdGenerator)
     internal suspend fun plannerFeature(database: AgentLifeDatabase, workspaceId: Uuid, scope: CoroutineScope): PlannerFeature? {
         val repository = RoomPlannerRepository(database, clock)
         val deviceId = repository.workspaceDeviceId(workspaceId) ?: return null

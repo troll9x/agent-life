@@ -18,7 +18,7 @@ Bảng khởi tạo: chưa có code nào trong bộ này được coi là IMPLEM
 | [PLAN-02](modules/03-planner/PLAN-02.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/PLAN-02.md): CRUD planner offline, dashboard AVD smoke, date/time picker follow-up UI 12/12 trên AVD riêng, domain 14/14, data AVD 18/18, lint/APK PASS |
 | [PLAN-03](modules/03-planner/PLAN-03.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/PLAN-03.md): app unit 5/5, data AVD 19/19, app suite OK (25, gồm phase probes skipped), reboot/múi giờ/delivery probes riêng PASS, lint/APK PASS |
 | [PLAN-04](modules/03-planner/PLAN-04.md) | CONNECTED | TODO | NOT_RUN | Chưa có |
-| [FIN-01](modules/04-finance/FIN-01.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
+| [FIN-01](modules/04-finance/FIN-01.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/FIN-01.md): Room v5 migration, transfer/rollback, domain 17/17, data AVD 25/25, lint/APK PASS |
 | [FIN-02](modules/04-finance/FIN-02.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
 | [FIN-03](modules/04-finance/FIN-03.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
 | [FIN-04](modules/04-finance/FIN-04.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |

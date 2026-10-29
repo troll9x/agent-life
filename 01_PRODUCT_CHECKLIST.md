@@ -141,8 +141,8 @@ Mức CONNECTED · [Prompt nhiệm vụ](modules/03-planner/PLAN-04.md)
 
 Mức PERSONAL · [Prompt nhiệm vụ](modules/04-finance/FIN-01.md)
 
-- [ ] **RQ-FIN-01-01** Số dư account bằng opening + tổng entry; chuyển khoản cập nhật hai account atomically.
-- [ ] **RQ-FIN-01-02** Không có Double/Float trong tính tiền và không ghi ledger không cân đối của transfer.
+- [x] **RQ-FIN-01-01** Số dư account bằng opening + tổng entry; chuyển khoản cập nhật hai account atomically. [Evidence](docs/progress/FIN-01.md)
+- [x] **RQ-FIN-01-02** Không có Double/Float trong tính tiền và không ghi ledger không cân đối của transfer. [Evidence](docs/progress/FIN-01.md)
 
 ### FIN-02 Nhập thu chi, tiền mặt và chuyển khoản
 

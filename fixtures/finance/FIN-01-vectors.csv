@@ -1,0 +1,3 @@
+scenario,opening_bank_vnd,opening_cash_vnd,kind,amount_vnd,expected_bank_vnd,expected_cash_vnd,expected_income_vnd,expected_expense_vnd
+transfer,10000000,0,TRANSFER,1000000,9000000,1000000,0,0
+second_entry_rejected,10000000,0,TRANSFER,1000000,10000000,0,0,0
