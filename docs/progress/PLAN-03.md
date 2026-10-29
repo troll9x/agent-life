@@ -42,6 +42,8 @@ App lập alarm một lần cho từng occurrence task/lịch trong cửa sổ 3
 | `$env:JAVA_HOME='C:\Program Files\Android\Android Studio\jbr'; .\gradlew.bat :domain:test :data:testDebugUnitTest :app:testDebugUnitTest :data:lintDebug :app:lintDebug :app:assembleDebug --console=plain -q` | `android/` | Exit 0 ở vòng cuối; data unit 9/9, app unit 5/5, domain/lint/debug APK PASS. |
 | `git diff --check` | Repo root | Exit 0; không có whitespace error. |
 
+CI cho commit `29b9594`: [Android run 40839862387](https://github.com/troll9x/agent-life/actions/runs/40839862387) PASS (`gh run watch 40839862387 --exit-status`, exit 0); job `build` chạy unit tests, lint và debug APK.
+
 ## Kịch bản và dữ liệu
 
 - Chỉ dùng tên/UUID fixture. Test Room dùng DB thử riêng; app test chạy trên AVD `emulator-5556`, không chạy instrumentation trên AVD người dùng `emulator-5554`.
