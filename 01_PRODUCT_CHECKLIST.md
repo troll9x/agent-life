@@ -125,8 +125,8 @@ Mức PERSONAL · [Prompt nhiệm vụ](modules/03-planner/PLAN-02.md)
 
 Mức PERSONAL · [Prompt nhiệm vụ](modules/03-planner/PLAN-03.md)
 
-- [ ] **RQ-PLAN-03-01** Nhắc/snooze/hủy còn đúng sau reboot, sửa task và đổi múi giờ trên thiết bị được kiểm.
-- [ ] **RQ-PLAN-03-02** Thiếu quyền exact/notification hiển thị trạng thái hạn chế, không báo lịch nhắc chắc chắn đúng phút.
+- [x] **RQ-PLAN-03-01** Nhắc/snooze/hủy còn đúng sau reboot, sửa task và đổi múi giờ trên thiết bị được kiểm. [Evidence](docs/progress/PLAN-03.md)
+- [x] **RQ-PLAN-03-02** Thiếu quyền exact/notification hiển thị trạng thái hạn chế, không báo lịch nhắc chắc chắn đúng phút. [Evidence](docs/progress/PLAN-03.md)
 
 ### PLAN-04 Đề xuất công việc từ nguồn ngoài
 

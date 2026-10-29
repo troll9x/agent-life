@@ -50,6 +50,8 @@ import vn.lifeos.data.profile.ProfileInput
 import vn.lifeos.app.planner.PlannerActions
 import vn.lifeos.app.planner.PlannerDashboard
 import vn.lifeos.app.planner.PlannerScreen
+import vn.lifeos.app.reminders.ReminderStatusPanel
+import androidx.compose.runtime.LaunchedEffect
 import java.time.ZoneId
 
 @Serializable internal data object TodayRoute
@@ -78,6 +80,8 @@ internal fun AgentLifeScreen(
     onCompleteOnboarding: (ProfileInput) -> Unit = {},
     onUpdateProfile: (ProfileInput) -> Unit = {},
     plannerActions: PlannerActions? = null,
+    reminderDestination: ReminderDestination? = null,
+    onRetryReminders: () -> Unit = {},
 ) {
     Surface(Modifier.fillMaxSize()) {
         when (state.startup) {
@@ -116,6 +120,7 @@ internal fun AgentLifeScreen(
                 is ProfileStatus.Ready -> AppShell(
                     state.online, state.darkTheme, profile.snapshot, state.now,
                     state.profileAction, state.planner, plannerActions, onThemeChange, onUpdateProfile,
+                    state.reminderScheduleError, reminderDestination, onRetryReminders,
                 )
             }
         }
@@ -134,6 +139,9 @@ private fun AppShell(
     plannerActions: PlannerActions?,
     onThemeChange: (Boolean) -> Unit,
     onUpdateProfile: (ProfileInput) -> Unit,
+    reminderScheduleError: Boolean,
+    reminderDestination: ReminderDestination?,
+    onRetryReminders: () -> Unit,
 ) {
     NotificationStartPrompt()
     val navController = rememberNavController()
@@ -149,6 +157,9 @@ private fun AppShell(
         else -> Area.Today
     }
     var showMore by remember { mutableStateOf(false) }
+    LaunchedEffect(reminderDestination) {
+        if (reminderDestination != null && selected != Area.Work) navController.navigate(WorkRoute) { launchSingleTop = true }
+    }
     fun navigateTo(area: Area) {
         if (selected == area) return
         when (area) {
@@ -186,11 +197,13 @@ private fun AppShell(
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
             if (!online) OfflineState()
+            if (selected == Area.Today || selected == Area.Work) ReminderStatusPanel(reminderScheduleError, onRetryReminders)
             NavHost(navController, startDestination = TodayRoute, modifier = Modifier.weight(1f)) {
                 composable<TodayRoute> {
                     PlannerDashboard(planner, now, ZoneId.of(snapshot.profile.zoneId), plannerActions) { navigateTo(Area.Work) }
                 }
-                composable<WorkRoute> { PlannerScreen(planner, now, ZoneId.of(snapshot.profile.zoneId), plannerActions) }
+                composable<WorkRoute> { PlannerScreen(planner, now, ZoneId.of(snapshot.profile.zoneId), plannerActions,
+                    reminderDestination?.type, reminderDestination?.id, reminderDestination?.triggerAt) }
                 composable<FinanceRoute> { AreaScreen(Area.Finance) }
                 composable<HealthRoute> { AreaScreen(Area.Health) }
                 composable<NewsRoute> { AreaScreen(Area.News) }

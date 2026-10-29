@@ -24,6 +24,7 @@ import vn.lifeos.app.planner.PlannerFeature
 import vn.lifeos.app.planner.PlannerUiState
 import vn.lifeos.app.planner.PlannerActions
 import vn.lifeos.app.planner.EventDraft
+import vn.lifeos.app.reminders.ReminderEngine
 import vn.lifeos.domain.common.Uuid
 import vn.lifeos.domain.planner.CalendarEvent
 import vn.lifeos.domain.planner.PlannedTask
@@ -50,6 +51,7 @@ internal data class ShellUiState(
     val profileAction: ProfileAction = ProfileAction.Idle,
     val now: Instant = Instant.EPOCH,
     val planner: PlannerUiState = PlannerUiState(),
+    val reminderScheduleError: Boolean = false,
 )
 
 internal class ShellViewModel(
@@ -68,6 +70,8 @@ internal class ShellViewModel(
     private var plannerFeature: PlannerFeature? = null
     private var plannerJob: Job? = null
     private var plannerDatabase: vn.lifeos.data.db.AgentLifeDatabase? = null
+    private var reminderEngine: ReminderEngine? = null
+    private var reminderRevision: String? = null
 
     init {
         retry()
@@ -96,6 +100,8 @@ internal class ShellViewModel(
                                     val ready = (mutableState.value.profile as? ProfileStatus.Ready)?.snapshot
                                     if (ready != null && plannerFeature == null) {
                                         startPlanner(access.database, ready.profile.workspaceId)
+                                    } else if (ready != null) {
+                                        refreshReminders()
                                     }
                                 }
                             }
@@ -180,7 +186,33 @@ internal class ShellViewModel(
         viewModelScope.launch { startPlanner(database, workspaceId) }
     }
 
+    fun refreshReminders(force: Boolean = false) {
+        val profile = (mutableState.value.profile as? ProfileStatus.Ready)?.snapshot?.profile ?: return
+        val planner = mutableState.value.planner
+        val engine = reminderEngine ?: return
+        if (planner.loading || planner.loadFailed) return
+        val revision = buildString {
+            append(profile.zoneId)
+            planner.tasks.forEach { append(it.id.value).append(':').append(it.version) }
+            planner.events.forEach { append(it.id.value).append(':').append(it.version) }
+            planner.exceptions.forEach {
+                append(it.id.value).append(':').append(it.originalOccurrenceKey).append(':')
+                    .append(it.cancelled).append(':').append(it.overridePayload)
+            }
+        }
+        if (!force && revision == reminderRevision) return
+        reminderRevision = revision
+        viewModelScope.launch {
+            val success = try { engine.reconcile(profile.workspaceId, java.time.ZoneId.of(profile.zoneId)) }
+                catch (cancelled: CancellationException) { throw cancelled }
+                catch (_: Exception) { false }
+            mutableState.value = mutableState.value.copy(reminderScheduleError = !success)
+            if (!success) reminderRevision = null
+        }
+    }
+
     private suspend fun startPlanner(database: vn.lifeos.data.db.AgentLifeDatabase, workspaceId: Uuid) {
+        reminderEngine = container.reminderEngine(database)
         plannerFeature = try { container.plannerFeature(database, workspaceId, viewModelScope) }
             catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) { null }
@@ -188,7 +220,10 @@ internal class ShellViewModel(
             planner = PlannerUiState(loading = false, loadFailed = true, error = "Không mở được dữ liệu công việc/lịch."))
         plannerJob?.cancel()
         plannerJob = plannerFeature?.let { feature -> viewModelScope.launch {
-            feature.state.collect { planner -> mutableState.value = mutableState.value.copy(planner = planner) }
+            feature.state.collect { planner ->
+                mutableState.value = mutableState.value.copy(planner = planner)
+                refreshReminders()
+            }
         } }
     }
 

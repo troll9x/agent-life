@@ -51,8 +51,13 @@ private enum class EditScope { SERIES, ONE }
 private data class EditorTarget(val event: CalendarEvent?, val occurrence: EventOccurrence?, val scope: EditScope)
 
 @Composable
-internal fun CalendarPanel(state: PlannerUiState, now: Instant, profileZone: ZoneId, actions: PlannerActions?) {
-    var selected by rememberSaveable { mutableStateOf(now.atZone(profileZone).toLocalDate().toString()) }
+internal fun CalendarPanel(state: PlannerUiState, now: Instant, profileZone: ZoneId, actions: PlannerActions?,
+    focusEventId: String? = null, focusTriggerAt: Long? = null) {
+    val focusDate = focusTriggerAt?.takeIf { it > 0 }?.let { Instant.ofEpochMilli(it).atZone(profileZone).toLocalDate() }
+        ?: state.events.firstOrNull { it.id.value == focusEventId }?.let {
+        it.startDate ?: it.startAt?.atZone(profileZone)?.toLocalDate()
+    }
+    var selected by rememberSaveable(focusEventId) { mutableStateOf((focusDate ?: now.atZone(profileZone).toLocalDate()).toString()) }
     var week by rememberSaveable { mutableStateOf(false) }
     var editor by remember { mutableStateOf<EditorTarget?>(null) }
     var choosing by remember { mutableStateOf<Pair<CalendarEvent, EventOccurrence>?>(null) }

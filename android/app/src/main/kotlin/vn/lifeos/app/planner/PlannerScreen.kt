@@ -68,8 +68,9 @@ internal fun PlannerDashboard(state: PlannerUiState, now: Instant, zone: ZoneId,
 }
 
 @Composable
-internal fun PlannerScreen(state: PlannerUiState, now: Instant, zone: ZoneId, actions: PlannerActions?) {
-    var showCalendar by rememberSaveable { mutableStateOf(false) }
+internal fun PlannerScreen(state: PlannerUiState, now: Instant, zone: ZoneId, actions: PlannerActions?,
+    reminderTargetType: String? = null, reminderTargetId: String? = null, reminderTriggerAt: Long? = null) {
+    var showCalendar by rememberSaveable(reminderTargetId) { mutableStateOf(reminderTargetType == "EVENT") }
     Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FilterChip(!showCalendar, onClick = { showCalendar = false }, label = { Text("Việc") })
@@ -77,8 +78,14 @@ internal fun PlannerScreen(state: PlannerUiState, now: Instant, zone: ZoneId, ac
         }
         PlannerStatus(state, actions)
         if (!state.loading && !state.loadFailed) {
-            if (showCalendar) CalendarPanel(state, now, zone, actions)
-            else TaskPanel(state, now, zone, actions)
+            if (reminderTargetId != null) {
+                val title = if (reminderTargetType == "TASK") state.tasks.firstOrNull { it.id.value == reminderTargetId }?.title
+                    else state.events.firstOrNull { it.id.value == reminderTargetId }?.title
+                Text("Lời nhắc: ${title ?: "Mục đã xóa hoặc không còn khả dụng"}", modifier = Modifier.testTag("reminder_target"))
+            }
+            if (showCalendar) CalendarPanel(state, now, zone, actions, if (reminderTargetType == "EVENT") reminderTargetId else null,
+                reminderTriggerAt)
+            else TaskPanel(state, now, zone, actions, if (reminderTargetType == "TASK") reminderTargetId else null)
         }
     }
 }
@@ -95,8 +102,8 @@ private fun PlannerStatus(state: PlannerUiState, actions: PlannerActions?) {
 }
 
 @Composable
-private fun TaskPanel(state: PlannerUiState, now: Instant, zone: ZoneId, actions: PlannerActions?) {
-    var done by rememberSaveable { mutableStateOf(false) }
+private fun TaskPanel(state: PlannerUiState, now: Instant, zone: ZoneId, actions: PlannerActions?, focusTaskId: String?) {
+    var done by rememberSaveable(focusTaskId) { mutableStateOf(state.tasks.firstOrNull { it.id.value == focusTaskId }?.state == TaskState.DONE) }
     var date by rememberSaveable { mutableStateOf("") }
     var projectIndex by rememberSaveable { mutableStateOf(0) }
     var edit by remember { mutableStateOf<PlannedTask?>(null) }

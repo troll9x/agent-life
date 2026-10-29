@@ -9,6 +9,7 @@ import vn.lifeos.data.planner.RecurrenceExceptionEntity
 import vn.lifeos.data.planner.ReminderEntity
 import vn.lifeos.data.planner.TaskChecklistItemEntity
 import vn.lifeos.data.planner.TaskEntity
+import vn.lifeos.data.reminders.ReminderDao
 
 @Database(
     entities = [
@@ -25,4 +26,5 @@ abstract class AgentLifeDatabase : RoomDatabase() {
     abstract fun foundationDao(): FoundationDao
     abstract fun privacyDao(): PrivacyDao
     abstract fun plannerDao(): PlannerDao
+    abstract fun reminderDao(): ReminderDao
 }

@@ -1,0 +1,7 @@
+<resources>
+    <string name="reminder_notifications_off">Thông báo đang tắt. Công việc và lịch vẫn lưu, nhưng app không thể hiện lời nhắc.</string>
+    <string name="reminder_inexact">Quyền báo thức chính xác chưa bật. Lời nhắc có thể đến muộn; app không cam kết đúng phút.</string>
+    <string name="reminder_open_settings">Mở cài đặt thông báo</string>
+    <string name="reminder_open_alarm_access">Mở quyền báo thức</string>
+    <string name="reminder_schedule_error">Chưa lập được lịch nhắc. Hãy thử lại sau khi mở khóa thiết bị.</string>
+</resources>

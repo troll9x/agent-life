@@ -18,6 +18,7 @@ import vn.lifeos.domain.common.Uuid
 import vn.lifeos.data.planner.RoomPlannerRepository
 import vn.lifeos.app.planner.PlannerFeature
 import kotlinx.coroutines.CoroutineScope
+import vn.lifeos.app.reminders.ReminderEngine
 
 /** Composition root. UI receives state from a ViewModel, never a database handle. */
 class AppContainer(context: Context, databaseProvider: EncryptedDatabaseProvider) {
@@ -26,6 +27,9 @@ class AppContainer(context: Context, databaseProvider: EncryptedDatabaseProvider
     val startupRepository: StartupRepository = EncryptedStartupRepository(databaseProvider)
     val appearanceRepository: AppearanceRepository = AppearanceRepository(context.applicationContext)
     val networkStatus: Flow<Boolean> = NetworkStatusRepository(context.applicationContext).online
+    private var reminders: ReminderEngine? = null
+    @Synchronized internal fun reminderEngine(database: AgentLifeDatabase): ReminderEngine =
+        reminders ?: ReminderEngine(applicationContext, database, clock).also { reminders = it }
     fun profileStore(database: AgentLifeDatabase): LocalProfileStore =
         LocalProfileStore(database, applicationContext, clock, RandomIdGenerator)
     internal suspend fun plannerFeature(database: AgentLifeDatabase, workspaceId: Uuid, scope: CoroutineScope): PlannerFeature? {
