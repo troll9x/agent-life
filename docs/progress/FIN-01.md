@@ -39,6 +39,8 @@ Ledger Room v5 lưu header giao dịch đã post và entry signed `Long`; số d
 | `rg -n '\b(Double|Float)\b' android/domain/src/main/kotlin/vn/lifeos/domain/finance android/data/src/main/kotlin/vn/lifeos/data/finance` | Repo root | Không có match. |
 | `git diff --check` | Repo root | Exit 0, không có whitespace error. |
 
+CI cho commit `99841d5`: [Android run 40855605012](https://github.com/troll9x/agent-life/actions/runs/40855605012) hoàn tất **success** ngày 30/10/2026 (`gh run view 40855605012 --json status,conclusion,url,headSha`); job build chạy unit tests, lint và debug APK.
+
 ## Kịch bản và dữ liệu
 
 - Vector giả ở `fixtures/finance/FIN-01-vectors.csv`; không có số tài khoản, token hoặc thông tin cá nhân. AVD hiện mang tên `AgentLife_Isolated_Test_API_37` dù serial là `emulator-5554`; đã xác nhận bằng command line process, không chạy instrumentation trên AVD người dùng.
