@@ -38,6 +38,7 @@ Khu Tài chính trong app cho tạo tài khoản CASH/BANK/SAVINGS có opening b
 | `adb -s emulator-5554 shell am instrument -w -e class 'vn.lifeos.app.FinanceEntryEndToEndTest' vn.lifeos.app.test/androidx.test.runner.AndroidJUnitRunner` | Cùng AVD, DB fixture riêng | `OK (1 test)`; form → Room mã hóa → đóng/mở → số dư/giao dịch còn. |
 | `adb -s emulator-5554 shell svc wifi disable`; `svc data disable`; chạy `RoomFinanceRepositoryTest#manualCashIncomeAndExpenseStayAfterReopenAndDuplicateSubmit`, rồi bật lại | Cùng AVD | `OK (1 test)` khi tắt mạng; Wi-Fi/mobile data đã bật lại. |
 | `adb -s emulator-5554 install -r android/app/build/outputs/apk/debug/app-debug.apk`; mở `MainActivity`, chạm khu Finance và kiểm UI dump | Cùng AVD | Install `Success`, màn “Tài khoản và số dư” xuất hiện, không có lỗi migration/storage trong logcat. |
+| `gh run watch 41025892742 --exit-status --interval 10` | GitHub Actions commit `fe3ebed` | [Android run 41025892742](https://github.com/troll9x/agent-life/actions/runs/41025892742) success; unit test, lint và debug APK PASS. |
 | `git diff --check` | Repo root | Exit 0, không có whitespace error. |
 
 ## Kịch bản và dữ liệu
