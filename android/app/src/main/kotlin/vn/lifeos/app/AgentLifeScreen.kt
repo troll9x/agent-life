@@ -51,6 +51,8 @@ import vn.lifeos.app.planner.PlannerActions
 import vn.lifeos.app.planner.PlannerDashboard
 import vn.lifeos.app.planner.PlannerScreen
 import vn.lifeos.app.reminders.ReminderStatusPanel
+import vn.lifeos.app.finance.entry.FinanceActions
+import vn.lifeos.app.finance.entry.FinanceEntryScreen
 import androidx.compose.runtime.LaunchedEffect
 import java.time.ZoneId
 
@@ -80,6 +82,7 @@ internal fun AgentLifeScreen(
     onCompleteOnboarding: (ProfileInput) -> Unit = {},
     onUpdateProfile: (ProfileInput) -> Unit = {},
     plannerActions: PlannerActions? = null,
+    financeActions: FinanceActions? = null,
     reminderDestination: ReminderDestination? = null,
     onRetryReminders: () -> Unit = {},
 ) {
@@ -120,7 +123,7 @@ internal fun AgentLifeScreen(
                 is ProfileStatus.Ready -> AppShell(
                     state.online, state.darkTheme, profile.snapshot, state.now,
                     state.profileAction, state.planner, plannerActions, onThemeChange, onUpdateProfile,
-                    state.reminderScheduleError, reminderDestination, onRetryReminders,
+                    state.reminderScheduleError, reminderDestination, onRetryReminders, state.finance, financeActions,
                 )
             }
         }
@@ -142,6 +145,8 @@ private fun AppShell(
     reminderScheduleError: Boolean,
     reminderDestination: ReminderDestination?,
     onRetryReminders: () -> Unit,
+    finance: vn.lifeos.app.finance.entry.FinanceUiState,
+    financeActions: FinanceActions?,
 ) {
     NotificationStartPrompt()
     val navController = rememberNavController()
@@ -204,7 +209,8 @@ private fun AppShell(
                 }
                 composable<WorkRoute> { PlannerScreen(planner, now, ZoneId.of(snapshot.profile.zoneId), plannerActions,
                     reminderDestination?.type, reminderDestination?.id, reminderDestination?.triggerAt) }
-                composable<FinanceRoute> { AreaScreen(Area.Finance) }
+                composable<FinanceRoute> { FinanceEntryScreen(finance, snapshot.profile.workspaceId,
+                    ZoneId.of(snapshot.profile.zoneId), now, financeActions) }
                 composable<HealthRoute> { AreaScreen(Area.Health) }
                 composable<NewsRoute> { AreaScreen(Area.News) }
                 composable<AssistantRoute> { AreaScreen(Area.Assistant) }

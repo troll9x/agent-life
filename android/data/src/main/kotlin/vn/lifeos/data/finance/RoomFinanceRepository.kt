@@ -28,6 +28,18 @@ class RoomFinanceRepository(private val database: AgentLifeDatabase, private val
             Outcome.Success(rows.map(AccountEntity::domain))
         }.catch { if (it is CancellationException) throw it else emit(Outcome.Failure(AppError.Storage)) }
 
+    override fun observeCategories(workspaceId: Uuid): Flow<Outcome<List<Category>>> =
+        dao.observeCategories(workspaceId.value).map<List<CategoryEntity>, Outcome<List<Category>>> { rows ->
+            Outcome.Success(rows.map(CategoryEntity::domain))
+        }.catch { if (it is CancellationException) throw it else emit(Outcome.Failure(AppError.Storage)) }
+
+    override fun observeRecentTransactions(workspaceId: Uuid): Flow<Outcome<List<PostedFinanceRow>>> =
+        dao.observeRecentTransactions(workspaceId.value).map<List<FinancialTransactionEntity>, Outcome<List<PostedFinanceRow>>> { rows ->
+            Outcome.Success(rows.map { row ->
+                PostedFinanceRow(row.domain(), dao.entriesForRow(workspaceId.value, row.id).map(LedgerEntryEntity::domain))
+            })
+        }.catch { if (it is CancellationException) throw it else emit(Outcome.Failure(AppError.Storage)) }
+
     override suspend fun createAccount(account: Account): Outcome<Account> = write {
         if (account.name.isBlank()) return@write invalid("name")
         if (dao.activeWorkspace(account.workspaceId.value) == null) return@write Outcome.Failure(AppError.NotFound)
@@ -127,6 +139,11 @@ class RoomFinanceRepository(private val database: AgentLifeDatabase, private val
             dao.insertEntry(LedgerEntryEntity(ids.newId().value, command.workspaceId.value, header.id,
                 account.id.value, delta, account.currency.value))
         }
+        if (command.sourceKind == FinanceSourceKind.MANUAL) {
+            dao.insertEvidence(SourceEvidenceEntity(ids.newId().value, command.workspaceId.value, null, "",
+                FinanceSourceKind.MANUAL.name, command.operationId.value, null, "", null, null,
+                now.toEpochMilli(), header.id))
+        }
         Outcome.Success(header.domain())
     }
 
@@ -183,6 +200,10 @@ class RoomFinanceRepository(private val database: AgentLifeDatabase, private val
 
 private fun AccountEntity.domain() = Account(Uuid.parse(id), Uuid.parse(workspaceId), name, AccountKind.valueOf(kind),
     CurrencyCode.of(currency), openingBalanceMinor, Instant.ofEpochMilli(openingAsOf), archivedAt?.let(Instant::ofEpochMilli))
+private fun CategoryEntity.domain() = Category(Uuid.parse(id), Uuid.parse(workspaceId), name,
+    CategoryDirection.valueOf(direction), parentId?.let(Uuid::parse), archivedAt?.let(Instant::ofEpochMilli))
+private fun LedgerEntryEntity.domain() = LedgerEntry(Uuid.parse(id), Uuid.parse(transactionId), Uuid.parse(accountId),
+    deltaMinor, CurrencyCode.of(currency))
 private fun FinancialTransactionEntity.domain() = FinancialTransaction(Uuid.parse(id), Uuid.parse(workspaceId),
     Uuid.parse(operationId), TransactionKind.valueOf(kind), Instant.ofEpochMilli(occurredAt), Instant.ofEpochMilli(postedAt),
     categoryId?.let(Uuid::parse), payee, note, reversesId?.let(Uuid::parse), refundOfId?.let(Uuid::parse),

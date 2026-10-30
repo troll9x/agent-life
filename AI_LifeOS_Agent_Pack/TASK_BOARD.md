@@ -19,7 +19,7 @@ Bảng khởi tạo: chưa có code nào trong bộ này được coi là IMPLEM
 | [PLAN-03](modules/03-planner/PLAN-03.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/PLAN-03.md): app unit 5/5, data AVD 19/19, app suite OK (25, gồm phase probes skipped), reboot/múi giờ/delivery probes riêng PASS, lint/APK PASS |
 | [PLAN-04](modules/03-planner/PLAN-04.md) | CONNECTED | TODO | NOT_RUN | Chưa có |
 | [FIN-01](modules/04-finance/FIN-01.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/FIN-01.md): Room v5 migration, transfer/rollback, domain 17/17, data AVD 25/25, lint/APK PASS |
-| [FIN-02](modules/04-finance/FIN-02.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
+| [FIN-02](modules/04-finance/FIN-02.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/FIN-02.md): Compose/Room offline, DB reopen, transfer/dedup, data AVD 26/26, app AVD 29/29 (gồm E2E), lint/APK PASS |
 | [FIN-03](modules/04-finance/FIN-03.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
 | [FIN-04](modules/04-finance/FIN-04.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
 | [FIN-05](modules/04-finance/FIN-05.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |

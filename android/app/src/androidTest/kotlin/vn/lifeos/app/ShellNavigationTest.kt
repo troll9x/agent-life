@@ -60,7 +60,12 @@ class ShellNavigationTest {
                 composeRule.waitUntil(45_000) { composeRule.onAllNodesWithText("Thêm việc").fetchSemanticsNodes().isNotEmpty() }
                 composeRule.onNodeWithText("Thêm việc").assertIsDisplayed()
             }
-            else if (area != "Cài đặt") composeRule.onNodeWithText("Chưa triển khai").assertIsDisplayed()
+            else if (area == "Tài chính") {
+                composeRule.waitUntil(45_000) {
+                    composeRule.onAllNodesWithText("Tài khoản và số dư").fetchSemanticsNodes().isNotEmpty()
+                }
+                composeRule.onNodeWithText("Tài khoản và số dư").assertIsDisplayed()
+            } else if (area != "Cài đặt") composeRule.onNodeWithText("Chưa triển khai").assertIsDisplayed()
         }
         Espresso.pressBack()
         composeRule.onAllNodesWithText("Trợ lý").onFirst().assertIsDisplayed()

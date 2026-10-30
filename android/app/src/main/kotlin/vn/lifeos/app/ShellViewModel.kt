@@ -31,6 +31,13 @@ import vn.lifeos.domain.planner.PlannedTask
 import vn.lifeos.domain.planner.TaskChecklistItem
 import vn.lifeos.domain.planner.TaskState
 import java.time.LocalDate
+import vn.lifeos.app.finance.entry.FinanceActions
+import vn.lifeos.app.finance.entry.FinanceFeature
+import vn.lifeos.app.finance.entry.FinanceUiState
+import vn.lifeos.domain.common.CurrencyCode
+import vn.lifeos.domain.finance.AccountKind
+import vn.lifeos.domain.finance.CategoryDirection
+import vn.lifeos.domain.finance.commands.ManualEntryInput
 
 internal sealed interface ProfileStatus {
     data object Loading : ProfileStatus
@@ -52,6 +59,7 @@ internal data class ShellUiState(
     val now: Instant = Instant.EPOCH,
     val planner: PlannerUiState = PlannerUiState(),
     val reminderScheduleError: Boolean = false,
+    val finance: FinanceUiState = FinanceUiState(),
 )
 
 internal class ShellViewModel(
@@ -59,7 +67,7 @@ internal class ShellViewModel(
     private val appearanceRepository: AppearanceRepository,
     networkStatus: kotlinx.coroutines.flow.Flow<Boolean>,
     private val container: AppContainer,
-) : ViewModel(), PlannerActions {
+) : ViewModel(), PlannerActions, FinanceActions {
     private val mutableState = MutableStateFlow(ShellUiState(darkTheme = appearanceRepository.isDarkTheme(), now = container.clock.instant()))
     val state: StateFlow<ShellUiState> = mutableState.asStateFlow()
     private var openJob: Job? = null
@@ -72,6 +80,8 @@ internal class ShellViewModel(
     private var plannerDatabase: vn.lifeos.data.db.AgentLifeDatabase? = null
     private var reminderEngine: ReminderEngine? = null
     private var reminderRevision: String? = null
+    private var financeFeature: FinanceFeature? = null
+    private var financeJob: Job? = null
 
     init {
         retry()
@@ -98,6 +108,9 @@ internal class ShellViewModel(
                                         is Outcome.Failure -> ProfileStatus.Error
                                     })
                                     val ready = (mutableState.value.profile as? ProfileStatus.Ready)?.snapshot
+                                    if (ready != null && financeFeature == null) {
+                                        startFinance(access.database, ready.profile.workspaceId, ready.profile.baseCurrency)
+                                    }
                                     if (ready != null && plannerFeature == null) {
                                         startPlanner(access.database, ready.profile.workspaceId)
                                     } else if (ready != null) {
@@ -184,6 +197,28 @@ internal class ShellViewModel(
         val database = plannerDatabase ?: return retry()
         val workspaceId = (mutableState.value.profile as? ProfileStatus.Ready)?.snapshot?.profile?.workspaceId ?: return
         viewModelScope.launch { startPlanner(database, workspaceId) }
+    }
+
+    override fun createAccount(name: String, kind: AccountKind, openingText: String, openingAsOf: Instant) {
+        financeFeature?.createAccount(name, kind, openingText, openingAsOf)
+    }
+    override fun createCategory(name: String, direction: CategoryDirection) {
+        financeFeature?.createCategory(name, direction)
+    }
+    override fun postManual(input: ManualEntryInput) { financeFeature?.postManual(input) }
+    override fun setDefaultWallet(accountId: Uuid) { financeFeature?.setDefaultWallet(accountId) }
+    override fun clearFinanceError() { financeFeature?.clearFinanceError() }
+    override fun retryFinance() { financeFeature?.retryFinance() }
+
+    private fun startFinance(database: vn.lifeos.data.db.AgentLifeDatabase, workspaceId: Uuid, currency: String) {
+        financeFeature = try { container.financeFeature(database, workspaceId, CurrencyCode.of(currency), viewModelScope) }
+            catch (_: Exception) { null }
+        if (financeFeature == null) mutableState.value = mutableState.value.copy(
+            finance = FinanceUiState(loading = false, loadFailed = true, error = "Không mở được sổ tài chính."))
+        financeJob?.cancel()
+        financeJob = financeFeature?.let { feature -> viewModelScope.launch {
+            feature.state.collect { finance -> mutableState.value = mutableState.value.copy(finance = finance) }
+        } }
     }
 
     fun refreshReminders(force: Boolean = false) {

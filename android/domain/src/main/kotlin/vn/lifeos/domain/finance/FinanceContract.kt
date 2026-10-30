@@ -13,6 +13,7 @@ enum class CategoryDirection { INCOME, EXPENSE }
 enum class TransactionKind { INCOME, EXPENSE, TRANSFER, REFUND, REVERSAL, ADJUSTMENT, LOAN_PRINCIPAL_IN, LOAN_PRINCIPAL_OUT }
 enum class CandidateState { PENDING, NEEDS_REVIEW, CONFIRMED, IGNORED, DUPLICATE, ERROR }
 enum class ReconciliationState { OPEN, RESOLVED }
+enum class FinanceSourceKind { MANUAL, NOTIFICATION, MAIL, IMPORT }
 
 data class Account(val id: Uuid, val workspaceId: Uuid, val name: String, val kind: AccountKind,
     val currency: CurrencyCode, val openingBalanceMinor: Long, val openingAsOf: Instant, val archivedAt: Instant? = null)
@@ -35,13 +36,14 @@ data class Budget(val id: Uuid, val workspaceId: Uuid, val categoryId: Uuid, val
 data class Reconciliation(val id: Uuid, val workspaceId: Uuid, val accountId: Uuid, val asOfInstant: Instant,
     val observedBalanceMinor: Long, val expectedBalanceMinor: Long, val differenceMinor: Long,
     val note: String?, val state: ReconciliationState)
+data class PostedFinanceRow(val transaction: FinancialTransaction, val entries: List<LedgerEntry>)
 
 /** Amount is a positive magnitude; signed ledger deltas are derived from kind. */
 data class PostFinanceCommand(val id: Uuid, val workspaceId: Uuid, val operationId: Uuid,
     val kind: TransactionKind, val accountId: Uuid, val amount: Money, val occurredAt: Instant,
     val categoryId: Uuid? = null, val destinationAccountId: Uuid? = null, val relatedTransactionId: Uuid? = null,
     val debtId: Uuid? = null, val payee: String? = null, val note: String? = null,
-    val adjustmentDeltaMinor: Long? = null)
+    val adjustmentDeltaMinor: Long? = null, val sourceKind: FinanceSourceKind = FinanceSourceKind.MANUAL)
 
 data class FinanceReportQuery(val workspaceId: Uuid, val currency: CurrencyCode,
     val startInclusive: Instant, val endExclusive: Instant)
@@ -50,6 +52,8 @@ data class FinanceReport(val incomeMinor: Long, val grossExpenseMinor: Long, val
 
 interface FinanceRepository {
     fun observeAccounts(workspaceId: Uuid): Flow<Outcome<List<Account>>>
+    fun observeCategories(workspaceId: Uuid): Flow<Outcome<List<Category>>>
+    fun observeRecentTransactions(workspaceId: Uuid): Flow<Outcome<List<PostedFinanceRow>>>
     suspend fun createAccount(account: Account): Outcome<Account>
     suspend fun createCategory(category: Category): Outcome<Category>
     suspend fun post(command: PostFinanceCommand): Outcome<FinancialTransaction>

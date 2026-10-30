@@ -9,6 +9,14 @@ import kotlinx.coroutines.flow.Flow
 interface FinanceDao {
     @Query("SELECT * FROM accounts WHERE workspaceId=:workspaceId ORDER BY name, id")
     fun observeAccounts(workspaceId: String): Flow<List<AccountEntity>>
+    @Query("SELECT * FROM categories WHERE workspaceId=:workspaceId ORDER BY name, id")
+    fun observeCategories(workspaceId: String): Flow<List<CategoryEntity>>
+    @Query("SELECT * FROM financial_transactions WHERE workspaceId=:workspaceId ORDER BY occurredAt DESC, id DESC LIMIT 50")
+    fun observeRecentTransactions(workspaceId: String): Flow<List<FinancialTransactionEntity>>
+    @Query("SELECT * FROM ledger_entries WHERE workspaceId=:workspaceId AND transactionId=:transactionId ORDER BY id")
+    suspend fun entriesForRow(workspaceId: String, transactionId: String): List<LedgerEntryEntity>
+    @Query("SELECT * FROM source_evidence WHERE workspaceId=:workspaceId AND transactionId=:transactionId")
+    suspend fun evidenceForTransaction(workspaceId: String, transactionId: String): List<SourceEvidenceEntity>
     @Query("SELECT * FROM accounts WHERE workspaceId=:workspaceId AND id=:id")
     suspend fun account(workspaceId: String, id: String): AccountEntity?
     @Query("SELECT * FROM categories WHERE workspaceId=:workspaceId AND id=:id")

@@ -7,6 +7,7 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertThrows
@@ -21,6 +22,9 @@ import vn.lifeos.domain.common.Money
 import vn.lifeos.domain.common.RandomIdGenerator
 import vn.lifeos.domain.common.Uuid
 import vn.lifeos.domain.finance.*
+import vn.lifeos.domain.finance.commands.ManualEntryInput
+import vn.lifeos.domain.finance.commands.ManualFinanceCommands
+import java.util.Locale
 import vn.lifeos.domain.foundation.AppError
 import vn.lifeos.domain.foundation.CreatePersonalWorkspace
 import vn.lifeos.domain.foundation.Outcome
@@ -60,7 +64,15 @@ class RoomFinanceRepositoryTest {
         assertEquals(0L, (repo.report(FinanceReportQuery(workspace, vnd, start, now.plusSeconds(1))) as Outcome.Success).value.incomeMinor)
         assertEquals(0L, (repo.report(FinanceReportQuery(workspace, vnd, start, now.plusSeconds(1))) as Outcome.Success).value.netExpenseMinor)
         assertEquals(2, db.financeDao().entries(workspace.value, transfer.id.value).size)
+        assertEquals("MANUAL", db.financeDao().evidenceForTransaction(workspace.value, transfer.id.value).single().sourceKind)
         db.close()
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val reopened = Room.databaseBuilder(context, AgentLifeDatabase::class.java, "finance-transfer.db").build()
+        val persisted = RoomFinanceRepository(reopened, clock, RandomIdGenerator)
+        assertEquals(9_000_000L, (persisted.balance(workspace, bank.id, now) as Outcome.Success).value.amountMinor)
+        assertEquals(1_000_000L, (persisted.balance(workspace, cash.id, now) as Outcome.Success).value.amountMinor)
+        assertEquals(1, (persisted.observeRecentTransactions(workspace).first() as Outcome.Success).value.size)
+        reopened.close()
     }
 
     @Test fun secondEntryFailureRollsBackHeaderAndFirstEntry() = runBlocking {
@@ -152,5 +164,37 @@ class RoomFinanceRepositoryTest {
                 9_900_000, 10_000_000, 0, null, "OPEN")
         }
         db.close()
+    }
+
+    @Test fun manualCashIncomeAndExpenseStayAfterReopenAndDuplicateSubmit() = runBlocking {
+        val name = "finance-manual-cash.db"
+        val db = setup(name)
+        val repo = RoomFinanceRepository(db, clock, RandomIdGenerator)
+        repo.createAccount(cash)
+        val incomeCategory = Category(id(880), workspace, "Fixture income", CategoryDirection.INCOME)
+        val expenseCategory = Category(id(881), workspace, "Fixture expense", CategoryDirection.EXPENSE)
+        repo.createCategory(incomeCategory); repo.createCategory(expenseCategory)
+        val commands = ManualFinanceCommands(repo, Locale.forLanguageTag("vi-VN"))
+        val income = ManualEntryInput(id(882), id(883), workspace, TransactionKind.INCOME, cash, null,
+            incomeCategory, "1.500.000", now.minusSeconds(60), "Fixture", null)
+        val expense = ManualEntryInput(id(884), id(885), workspace, TransactionKind.EXPENSE, cash, null,
+            expenseCategory, "250.000", now, null, "Fixture expense")
+        assertTrue(commands.post(income) is Outcome.Success)
+        assertTrue(commands.post(expense) is Outcome.Success)
+        assertEquals(Outcome.Failure(AppError.Conflict), commands.post(expense))
+        assertEquals(1_250_000L, (repo.balance(workspace, cash.id, now) as Outcome.Success).value.amountMinor)
+        db.close()
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val reopened = Room.databaseBuilder(context, AgentLifeDatabase::class.java, name).build()
+        val persisted = RoomFinanceRepository(reopened, clock, RandomIdGenerator)
+        assertEquals(1_250_000L, (persisted.balance(workspace, cash.id, now) as Outcome.Success).value.amountMinor)
+        assertEquals(Outcome.Failure(AppError.Conflict),
+            ManualFinanceCommands(persisted, Locale.forLanguageTag("vi-VN")).post(expense))
+        val report = (persisted.report(FinanceReportQuery(workspace, vnd, start, now.plusSeconds(1))) as Outcome.Success).value
+        assertEquals(1_500_000L, report.incomeMinor)
+        assertEquals(250_000L, report.netExpenseMinor)
+        assertEquals(2, (persisted.observeRecentTransactions(workspace).first() as Outcome.Success).value.size)
+        assertEquals("MANUAL", reopened.financeDao().evidenceForTransaction(workspace.value, expense.transactionId.value).single().sourceKind)
+        reopened.close()
     }
 }

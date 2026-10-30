@@ -148,8 +148,8 @@ Mức PERSONAL · [Prompt nhiệm vụ](modules/04-finance/FIN-01.md)
 
 Mức PERSONAL · [Prompt nhiệm vụ](modules/04-finance/FIN-02.md)
 
-- [ ] **RQ-FIN-02-01** Ghi thu/chi và tiền mặt hoạt động offline, dữ liệu còn sau đóng/mở app.
-- [ ] **RQ-FIN-02-02** Chuyển khoản nội bộ và submit lặp giữ đúng số dư, không tăng income/expense.
+- [x] **RQ-FIN-02-01** Ghi thu/chi và tiền mặt hoạt động offline, dữ liệu còn sau đóng/mở app. [Evidence](docs/progress/FIN-02.md)
+- [x] **RQ-FIN-02-02** Chuyển khoản nội bộ và submit lặp giữ đúng số dư, không tăng income/expense. [Evidence](docs/progress/FIN-02.md)
 
 ### FIN-03 Ngân sách và báo cáo tháng
 

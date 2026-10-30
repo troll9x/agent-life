@@ -54,6 +54,7 @@ class MainActivity : ComponentActivity() {
                     onCompleteOnboarding = shellViewModel::completeOnboarding,
                     onUpdateProfile = shellViewModel::updateProfile,
                     plannerActions = shellViewModel,
+                    financeActions = shellViewModel,
                     reminderDestination = reminderDestination.value,
                     onRetryReminders = { shellViewModel.refreshReminders(force = true) },
                 )
