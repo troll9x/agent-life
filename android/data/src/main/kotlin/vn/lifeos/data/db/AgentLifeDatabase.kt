@@ -11,6 +11,7 @@ import vn.lifeos.data.planner.TaskChecklistItemEntity
 import vn.lifeos.data.planner.TaskEntity
 import vn.lifeos.data.reminders.ReminderDao
 import vn.lifeos.data.finance.*
+import vn.lifeos.data.finance.imports.FinanceInboxDao
 
 @Database(
     entities = [
@@ -31,4 +32,5 @@ abstract class AgentLifeDatabase : RoomDatabase() {
     abstract fun plannerDao(): PlannerDao
     abstract fun reminderDao(): ReminderDao
     abstract fun financeDao(): FinanceDao
+    abstract fun financeInboxDao(): FinanceInboxDao
 }

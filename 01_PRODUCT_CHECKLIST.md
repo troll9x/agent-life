@@ -162,8 +162,8 @@ Mức PERSONAL · [Prompt nhiệm vụ](modules/04-finance/FIN-03.md)
 
 Mức PERSONAL · [Prompt nhiệm vụ](modules/04-finance/FIN-04.md)
 
-- [ ] **RQ-FIN-04-01** Thông báo/email/nhập tay cùng khoản sau quyết định ghép chỉ làm ghi sổ một lần.
-- [ ] **RQ-FIN-04-02** Giao dịch cùng tiền khác reference được giữ riêng; mơ hồ luôn chờ người dùng.
+- [x] **RQ-FIN-04-01** Thông báo/email/nhập tay cùng khoản sau quyết định ghép chỉ làm ghi sổ một lần. [Evidence fixture](docs/progress/FIN-04.md)
+- [x] **RQ-FIN-04-02** Giao dịch cùng tiền khác reference được giữ riêng; mơ hồ luôn chờ người dùng. [Evidence fixture](docs/progress/FIN-04.md)
 
 ### FIN-05 Mục tiêu và tài khoản tiết kiệm
 

@@ -37,6 +37,7 @@ import vn.lifeos.domain.finance.Category
 import vn.lifeos.domain.finance.CategoryDirection
 import vn.lifeos.domain.foundation.Outcome
 import vn.lifeos.data.finance.reports.RoomFinanceReportsRepository
+import vn.lifeos.data.finance.imports.RoomFinanceInboxRepository
 
 @RunWith(AndroidJUnit4::class)
 class FinanceEntryEndToEndTest {
@@ -61,7 +62,8 @@ class FinanceEntryEndToEndTest {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
         val feature = FinanceFeature(repository, workspaceId, cash.currency, RandomIdGenerator,
             app.appContainer.clock, DefaultWalletPreference(app), scope,
-            zone = zone, reports = RoomFinanceReportsRepository(database))
+            zone = zone, reports = RoomFinanceReportsRepository(database),
+            inbox = RoomFinanceInboxRepository(database, app.appContainer.clock, RandomIdGenerator))
         val now = app.appContainer.clock.instant()
         composeRule.setContent {
             val state by feature.state.collectAsState()

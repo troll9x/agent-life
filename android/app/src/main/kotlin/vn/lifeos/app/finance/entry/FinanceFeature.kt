@@ -26,6 +26,7 @@ import vn.lifeos.domain.finance.refund.ManualRefundAdjustmentCommands
 import vn.lifeos.domain.finance.refund.ManualRefundInput
 import vn.lifeos.domain.finance.refund.ManualAdjustmentInput
 import vn.lifeos.domain.finance.reports.*
+import vn.lifeos.domain.finance.imports.*
 import vn.lifeos.domain.foundation.AppError
 import vn.lifeos.domain.foundation.Outcome
 
@@ -39,6 +40,8 @@ internal data class FinanceUiState(
     val report: ReportSnapshot? = null, val previousReport: ReportSnapshot? = null,
     val reportLoading: Boolean = false, val reportError: String? = null,
     val reportPeriod: ReportPeriod? = null, val reportAccountId: Uuid? = null,
+    val inboxLoading: Boolean = false, val inboxBusy: Boolean = false,
+    val inboxError: String? = null, val inboxItems: List<InboxItem> = emptyList(),
 )
 
 internal interface FinanceActions {
@@ -55,6 +58,10 @@ internal interface FinanceActions {
     fun selectReportAccount(accountId: Uuid?)
     fun saveReportBudget(categoryId: Uuid, amountText: String, thresholdEnabled: Boolean)
     fun retryReport()
+    fun retryInbox()
+    fun approveInbox(candidateId: Uuid, accountId: Uuid, categoryId: Uuid)
+    fun linkInbox(candidateId: Uuid, transactionId: Uuid)
+    fun ignoreInbox(candidateId: Uuid)
 }
 
 internal class DefaultWalletPreference(context: Context) {
@@ -69,6 +76,7 @@ internal class FinanceFeature(private val repository: FinanceRepository, private
     private val walletPreference: DefaultWalletPreference, private val scope: CoroutineScope,
     private val reversals: ReversalRepository? = null, private var zone: ZoneId = ZoneId.systemDefault(),
     private val reports: FinanceReportsRepository? = null, private var budgetStartDay: Int = 1,
+    private val inbox: FinanceInboxRepository? = null,
 ) : FinanceActions {
     private val commands = ManualFinanceCommands(repository, Locale.forLanguageTag("vi-VN"))
     private val corrections = ManualRefundAdjustmentCommands(repository, Locale.forLanguageTag("vi-VN"))
@@ -77,8 +85,64 @@ internal class FinanceFeature(private val repository: FinanceRepository, private
     private var observeJob: Job? = null
     private var action: Job? = null
     private var reportJob: Job? = null
+    private var inboxJob: Job? = null
+    private var inboxAction: Job? = null
 
-    init { retryFinance() }
+    init { retryFinance(); retryInbox() }
+
+    override fun retryInbox() {
+        val source = inbox ?: return
+        inboxJob?.cancel()
+        mutable.value = mutable.value.copy(inboxLoading = true, inboxError = null)
+        inboxJob = scope.launch {
+            source.observe(workspaceId).collect { result ->
+                mutable.value = when (result) {
+                    is Outcome.Success -> mutable.value.copy(inboxLoading = false, inboxError = null, inboxItems = result.value)
+                    is Outcome.Failure -> mutable.value.copy(inboxLoading = false, inboxError = "Không đọc được hàng chờ nhập.")
+                }
+            }
+        }
+    }
+
+    override fun approveInbox(candidateId: Uuid, accountId: Uuid, categoryId: Uuid) {
+        val item = mutable.value.inboxItems.firstOrNull { it.candidate.id == candidateId } ?: return
+        val candidate = item.candidate
+        val amount = candidate.amountMinor ?: return inboxError("Thiếu số tiền cần kiểm tra.")
+        val currency = candidate.currency ?: return inboxError("Thiếu tiền tệ cần kiểm tra.")
+        val occurred = candidate.occurredAt ?: return inboxError("Thiếu thời gian giao dịch.")
+        val kind = when (candidate.direction) {
+            CategoryDirection.INCOME -> TransactionKind.INCOME
+            CategoryDirection.EXPENSE -> TransactionKind.EXPENSE
+            null -> return inboxError("Thiếu chiều thu/chi.")
+        }
+        val command = PostFinanceCommand(ids.newId(), workspaceId, ids.newId(), kind, accountId,
+            vn.lifeos.domain.common.Money(amount, currency), occurred, categoryId = categoryId)
+        decideInbox(candidateId, InboxDecision.Approve(command))
+    }
+
+    override fun linkInbox(candidateId: Uuid, transactionId: Uuid) =
+        decideInbox(candidateId, InboxDecision.Duplicate(transactionId))
+    override fun ignoreInbox(candidateId: Uuid) = decideInbox(candidateId, InboxDecision.Ignore)
+
+    private fun inboxError(message: String) { mutable.value = mutable.value.copy(inboxError = message) }
+
+    private fun decideInbox(candidateId: Uuid, decision: InboxDecision) {
+        val source = inbox ?: return
+        if (inboxAction?.isActive == true) return
+        inboxAction = scope.launch {
+            mutable.value = mutable.value.copy(inboxBusy = true, inboxError = null)
+            val result = source.decide(workspaceId, candidateId, decision)
+            mutable.value = when (result) {
+                is Outcome.Success -> mutable.value.copy(inboxBusy = false)
+                is Outcome.Failure -> mutable.value.copy(inboxBusy = false, inboxError = when (val error = result.error) {
+                    AppError.Conflict -> "Ứng viên đã đổi hoặc reference đã ghi sổ. Tải lại và chọn ghép."
+                    is AppError.InvalidInput -> "Dữ liệu hoặc giao dịch ghép không khớp: ${error.field}."
+                    AppError.NotFound -> "Không tìm thấy ứng viên hoặc giao dịch."
+                    AppError.Storage -> "Không lưu được quyết định. Thử lại."
+                })
+            }
+        }
+    }
 
     fun updateZone(value: ZoneId) {
         if (zone == value) return

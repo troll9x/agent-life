@@ -224,6 +224,12 @@ internal class ShellViewModel(
         financeFeature?.saveReportBudget(categoryId, amountText, thresholdEnabled)
     }
     override fun retryReport() { financeFeature?.retryReport() }
+    override fun retryInbox() { financeFeature?.retryInbox() }
+    override fun approveInbox(candidateId: Uuid, accountId: Uuid, categoryId: Uuid) {
+        financeFeature?.approveInbox(candidateId, accountId, categoryId)
+    }
+    override fun linkInbox(candidateId: Uuid, transactionId: Uuid) { financeFeature?.linkInbox(candidateId, transactionId) }
+    override fun ignoreInbox(candidateId: Uuid) { financeFeature?.ignoreInbox(candidateId) }
 
     private fun startFinance(database: vn.lifeos.data.db.AgentLifeDatabase, workspaceId: Uuid, currency: String,
         zoneId: String, budgetStartDay: Int) {

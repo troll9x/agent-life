@@ -21,7 +21,7 @@ Bảng khởi tạo: chưa có code nào trong bộ này được coi là IMPLEM
 | [FIN-01](modules/04-finance/FIN-01.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/FIN-01.md): Room v5 migration, transfer/rollback, domain 17/17, data AVD 25/25, lint/APK PASS |
 | [FIN-02](modules/04-finance/FIN-02.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/FIN-02.md): Compose/Room offline, DB reopen, transfer/dedup, data AVD 26/26, app AVD 29/29 (gồm E2E), lint/APK PASS |
 | [FIN-03](modules/04-finance/FIN-03.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/FIN-03.md): domain 3/3, Room AVD 1/1, Compose 4/4, app E2E 1/1, lint/APK PASS; CSV picker thủ công chưa kiểm |
-| [FIN-04](modules/04-finance/FIN-04.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
+| [FIN-04](modules/04-finance/FIN-04.md) | PERSONAL | VERIFIED | EXTERNAL_BLOCKED | [Evidence](../docs/progress/FIN-04.md): matcher 4/4, Room AVD 3/3, Compose inbox 1/1, finance UI 4/4, E2E 1/1, lint/APK PASS; nguồn notification/email thật chờ connector/parser |
 | [FIN-05](modules/04-finance/FIN-05.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
 | [NOTI-01](modules/05-bank-notifications/NOTI-01.md) | CONNECTED | TODO | NOT_RUN | Chưa có |
 | [NOTI-02](modules/05-bank-notifications/NOTI-02.md) | CONNECTED | TODO | NOT_RUN | Chưa có |

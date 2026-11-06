@@ -91,6 +91,10 @@ class FinanceEntryUiTest {
             override fun selectReportAccount(accountId: Uuid?) = Unit
             override fun saveReportBudget(categoryId: Uuid, amountText: String, thresholdEnabled: Boolean) = Unit
             override fun retryReport() = Unit
+            override fun retryInbox() = Unit
+            override fun approveInbox(candidateId: Uuid, accountId: Uuid, categoryId: Uuid) = Unit
+            override fun linkInbox(candidateId: Uuid, transactionId: Uuid) = Unit
+            override fun ignoreInbox(candidateId: Uuid) = Unit
         }
         composeRule.setContent {
             FinanceEntryScreen(FinanceUiState(loading = false, accounts = listOf(bank, cash),
