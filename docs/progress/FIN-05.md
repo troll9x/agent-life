@@ -30,6 +30,7 @@ Môi trường: `android/`, JBR Android Studio; AVD `emulator-5554` API 37. Ch�
 | `adb shell am instrument -w -e class vn.lifeos.data.finance.goals.SavingsGoalMigrationTest,vn.lifeos.data.finance.goals.RoomSavingsGoalRepositoryTest vn.lifeos.data.test/androidx.test.runner.AndroidJUnitRunner` | `OK (2 tests)`: schema 5→6 hợp lệ, lưu/tính tiến độ/transfer/archive/reopen. Lần đầu test repository sai do dựa vào thứ tự hai mục tiêu; đã sửa tra theo ID và chạy lại PASS. |
 | `adb shell am instrument -w -e class vn.lifeos.app.FinanceGoalsUiTest,vn.lifeos.app.FinanceEntryUiTest vn.lifeos.app.test/androidx.test.runner.AndroidJUnitRunner` | `OK (5 tests)`: UI mục tiêu và regression tài chính. |
 | `git diff --check` | Exit 0; chỉ cảnh báo Git về LF/CRLF. |
+| `git push origin main`; `gh run watch 42192296884 --exit-status --interval 10` | Commit `39c90a2` đã đẩy; [Android CI run 42192296884](https://github.com/troll9x/agent-life/actions/runs/42192296884) success: unit tests, lint, debug APK. |
 
 ## Gate còn mở
 
