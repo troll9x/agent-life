@@ -40,6 +40,7 @@ Báo cáo lấy một snapshot Room nhất quán theo workspace, currency, tài 
 | `adb -s emulator-5554 shell am instrument -w -e class vn.lifeos.app.FinanceEntryUiTest vn.lifeos.app.test/androidx.test.runner.AndroidJUnitRunner` | AVD riêng API 37 | `OK (4 tests)` sau cài APK mới. |
 | `adb -s emulator-5554 shell am instrument -w -e class vn.lifeos.app.FinanceEntryEndToEndTest vn.lifeos.app.test/androidx.test.runner.AndroidJUnitRunner` | AVD riêng API 37 | `OK (1 test)`; báo cáo hiển thị thu 500.000 sau ghi giao dịch và mở DB mã hóa. |
 | `git diff --check` | Repo root | Exit 0; Git chỉ nhắc chuẩn hóa LF/CRLF của working copy. |
+| `git push origin main`; `gh run watch 42187283884 --exit-status --interval 10` | GitHub commit `40a232b` | Push thành công; [Android CI run 42187283884](https://github.com/troll9x/agent-life/actions/runs/42187283884) success, unit tests/lint/debug APK PASS. |
 
 ## Kịch bản và chính sách
 
