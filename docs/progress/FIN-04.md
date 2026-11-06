@@ -41,6 +41,7 @@ Candidate được lưu riêng khỏi ledger; `ingest` không đổi số dư. I
 | `adb -s emulator-5554 shell am instrument -w -e class vn.lifeos.app.FinanceEntryUiTest vn.lifeos.app.test/androidx.test.runner.AndroidJUnitRunner` | AVD riêng API 37 | `OK (4 tests)`, regression màn Tài chính. |
 | `adb -s emulator-5554 shell am instrument -w -e class vn.lifeos.app.FinanceEntryEndToEndTest vn.lifeos.app.test/androidx.test.runner.AndroidJUnitRunner` | AVD riêng API 37 | `OK (1 test)` với Room inbox và DB mã hóa. |
 | `git diff --check` | Repo root | Exit 0; Git chỉ nhắc LF/CRLF trong working copy. |
+| `git push origin main`; `gh run watch 42190374158 --exit-status --interval 10` | GitHub commit `6753a52` | Push thành công; [Android CI run 42190374158](https://github.com/troll9x/agent-life/actions/runs/42190374158) success, unit tests/lint/debug APK PASS. |
 
 ## Kịch bản, dữ liệu và gate
 
