@@ -169,8 +169,8 @@ Mức PERSONAL · [Prompt nhiệm vụ](modules/04-finance/FIN-04.md)
 
 Mức PERSONAL · [Prompt nhiệm vụ](modules/04-finance/FIN-05.md)
 
-- [ ] **RQ-FIN-05-01** Mục tiêu tiết kiệm có tiến độ lấy từ ledger và dữ liệu lưu ngoại tuyến.
-- [ ] **RQ-FIN-05-02** Chuyển sang tiết kiệm không tiêu ngân sách chi phí hoặc nhân đôi tổng tài sản.
+- [x] **RQ-FIN-05-01** Mục tiêu tiết kiệm có tiến độ lấy từ ledger và dữ liệu lưu ngoại tuyến.
+- [x] **RQ-FIN-05-02** Chuyển sang tiết kiệm không tiêu ngân sách chi phí hoặc nhân đôi tổng tài sản.
 
 ### FIN-06 Theo dõi cho vay và đi vay
 

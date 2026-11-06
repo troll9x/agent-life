@@ -27,6 +27,8 @@ import vn.lifeos.domain.finance.refund.ManualRefundInput
 import vn.lifeos.domain.finance.refund.ManualAdjustmentInput
 import vn.lifeos.domain.finance.reports.*
 import vn.lifeos.domain.finance.imports.*
+import vn.lifeos.domain.finance.goals.*
+import java.time.LocalDate
 import vn.lifeos.domain.foundation.AppError
 import vn.lifeos.domain.foundation.Outcome
 
@@ -42,6 +44,8 @@ internal data class FinanceUiState(
     val reportPeriod: ReportPeriod? = null, val reportAccountId: Uuid? = null,
     val inboxLoading: Boolean = false, val inboxBusy: Boolean = false,
     val inboxError: String? = null, val inboxItems: List<InboxItem> = emptyList(),
+    val goalsLoading: Boolean = false, val goalsBusy: Boolean = false, val goalsError: String? = null,
+    val savingsGoals: List<SavingsGoal> = emptyList(), val goalOverview: GoalOverview? = null,
 )
 
 internal interface FinanceActions {
@@ -62,6 +66,10 @@ internal interface FinanceActions {
     fun approveInbox(candidateId: Uuid, accountId: Uuid, categoryId: Uuid)
     fun linkInbox(candidateId: Uuid, transactionId: Uuid)
     fun ignoreInbox(candidateId: Uuid)
+    fun retrySavingsGoals()
+    fun createSavingsGoal(name: String, targetText: String, targetDate: LocalDate?, accountIds: Set<Uuid>)
+    fun changeSavingsGoalTarget(goalId: Uuid, targetText: String, targetDate: LocalDate?)
+    fun archiveSavingsGoal(goalId: Uuid)
 }
 
 internal class DefaultWalletPreference(context: Context) {
@@ -77,6 +85,7 @@ internal class FinanceFeature(private val repository: FinanceRepository, private
     private val reversals: ReversalRepository? = null, private var zone: ZoneId = ZoneId.systemDefault(),
     private val reports: FinanceReportsRepository? = null, private var budgetStartDay: Int = 1,
     private val inbox: FinanceInboxRepository? = null,
+    private val goals: SavingsGoalRepository? = null,
 ) : FinanceActions {
     private val commands = ManualFinanceCommands(repository, Locale.forLanguageTag("vi-VN"))
     private val corrections = ManualRefundAdjustmentCommands(repository, Locale.forLanguageTag("vi-VN"))
@@ -87,8 +96,75 @@ internal class FinanceFeature(private val repository: FinanceRepository, private
     private var reportJob: Job? = null
     private var inboxJob: Job? = null
     private var inboxAction: Job? = null
+    private var goalsJob: Job? = null
+    private var goalsAction: Job? = null
 
-    init { retryFinance(); retryInbox() }
+    init { retryFinance(); retryInbox(); retrySavingsGoals() }
+
+    override fun retrySavingsGoals() {
+        val source = goals ?: return
+        goalsJob?.cancel()
+        mutable.value = mutable.value.copy(goalsLoading = true, goalsError = null)
+        goalsJob = scope.launch {
+            source.observe(workspaceId).collect { result ->
+                mutable.value = when (result) {
+                    is Outcome.Success -> mutable.value.copy(goalsLoading = false, savingsGoals = result.value, goalsError = null)
+                    is Outcome.Failure -> mutable.value.copy(goalsLoading = false, goalsError = "Không đọc được mục tiêu tiết kiệm.")
+                }
+                refreshGoalOverview()
+            }
+        }
+    }
+
+    private fun refreshGoalOverview() {
+        val current = mutable.value
+        if (current.loading || current.loadFailed) return
+        val overview = runCatching { SavingsGoalProgress.calculate(current.savingsGoals, current.accounts, current.balances) }
+        mutable.value = if (overview.isSuccess) current.copy(goalOverview = overview.getOrThrow())
+            else current.copy(goalOverview = null, goalsError = "Không tính được tiến độ từ số dư tài khoản.")
+    }
+
+    override fun createSavingsGoal(name: String, targetText: String, targetDate: LocalDate?, accountIds: Set<Uuid>) {
+        val accounts = mutable.value.accounts.filter { it.id in accountIds }
+        if (accounts.size != accountIds.size || accounts.isEmpty() || accounts.any { it.kind != AccountKind.SAVINGS } ||
+            accounts.map { it.currency }.distinct().size != 1) return goalError("Chọn tài khoản tiết kiệm cùng tiền tệ.")
+        val currency = accounts.first().currency
+        val amount = parseGoalAmount(targetText, currency) ?: return goalError("Mục tiêu phải là số tiền dương.")
+        goalAction("Đã tạo mục tiêu") { goals!!.create(SavingsGoal(ids.newId(), workspaceId, name,
+            currency, amount, targetDate, accountIds)) }
+    }
+
+    override fun changeSavingsGoalTarget(goalId: Uuid, targetText: String, targetDate: LocalDate?) {
+        val goal = mutable.value.savingsGoals.firstOrNull { it.id == goalId } ?: return
+        val amount = parseGoalAmount(targetText, goal.currency) ?: return goalError("Mục tiêu phải là số tiền dương.")
+        goalAction("Đã đổi mục tiêu") { goals!!.updateTarget(workspaceId, goalId, amount, targetDate) }
+    }
+
+    override fun archiveSavingsGoal(goalId: Uuid) {
+        goalAction("Đã lưu trữ mục tiêu") { goals!!.archive(workspaceId, goalId) }
+    }
+
+    private fun parseGoalAmount(text: String, currency: CurrencyCode): Long? = runCatching {
+        vn.lifeos.domain.common.Money.parse(text, currency, Locale.forLanguageTag("vi-VN"))
+            .amountMinor.takeIf { it > 0 }
+    }.getOrNull()
+    private fun goalError(message: String) { mutable.value = mutable.value.copy(goalsError = message) }
+    private fun goalAction(message: String, operation: suspend () -> Outcome<SavingsGoal>) {
+        if (goals == null || goalsAction?.isActive == true) return
+        goalsAction = scope.launch {
+            mutable.value = mutable.value.copy(goalsBusy = true, goalsError = null)
+            val result = operation()
+            mutable.value = when (result) {
+                is Outcome.Success -> mutable.value.copy(goalsBusy = false, confirmation = message)
+                is Outcome.Failure -> mutable.value.copy(goalsBusy = false, goalsError = when (val error = result.error) {
+                    is AppError.InvalidInput -> "Mục tiêu chưa hợp lệ: ${error.field}."
+                    AppError.Conflict -> "Mục tiêu đã thay đổi hoặc đã lưu trữ."
+                    AppError.NotFound -> "Không tìm thấy tài khoản hoặc mục tiêu."
+                    AppError.Storage -> "Không lưu được mục tiêu. Thử lại."
+                })
+            }
+        }
+    }
 
     override fun retryInbox() {
         val source = inbox ?: return
@@ -241,6 +317,7 @@ internal class FinanceFeature(private val repository: FinanceRepository, private
                         error = if (failed) "Không tính được số dư hoặc báo cáo tài chính." else null,
                         accounts = accounts, categories = categories, transactions = transactions,
                         balances = balances, defaultWalletId = selected, monthlyReports = monthly)
+                    refreshGoalOverview()
                     retryReport()
                 }
             }

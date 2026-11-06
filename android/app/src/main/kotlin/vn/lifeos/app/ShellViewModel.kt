@@ -230,6 +230,14 @@ internal class ShellViewModel(
     }
     override fun linkInbox(candidateId: Uuid, transactionId: Uuid) { financeFeature?.linkInbox(candidateId, transactionId) }
     override fun ignoreInbox(candidateId: Uuid) { financeFeature?.ignoreInbox(candidateId) }
+    override fun retrySavingsGoals() { financeFeature?.retrySavingsGoals() }
+    override fun createSavingsGoal(name: String, targetText: String, targetDate: java.time.LocalDate?, accountIds: Set<Uuid>) {
+        financeFeature?.createSavingsGoal(name, targetText, targetDate, accountIds)
+    }
+    override fun changeSavingsGoalTarget(goalId: Uuid, targetText: String, targetDate: java.time.LocalDate?) {
+        financeFeature?.changeSavingsGoalTarget(goalId, targetText, targetDate)
+    }
+    override fun archiveSavingsGoal(goalId: Uuid) { financeFeature?.archiveSavingsGoal(goalId) }
 
     private fun startFinance(database: vn.lifeos.data.db.AgentLifeDatabase, workspaceId: Uuid, currency: String,
         zoneId: String, budgetStartDay: Int) {

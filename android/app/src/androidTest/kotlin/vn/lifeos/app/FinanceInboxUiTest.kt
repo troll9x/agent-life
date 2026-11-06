@@ -67,6 +67,10 @@ class FinanceInboxUiTest {
             }
             override fun linkInbox(candidateId: Uuid, transactionId: Uuid) { linked = candidateId to transactionId }
             override fun ignoreInbox(candidateId: Uuid) { ignored = candidateId }
+            override fun retrySavingsGoals() = Unit
+            override fun createSavingsGoal(name: String, targetText: String, targetDate: java.time.LocalDate?, accountIds: Set<Uuid>) = Unit
+            override fun changeSavingsGoalTarget(goalId: Uuid, targetText: String, targetDate: java.time.LocalDate?) = Unit
+            override fun archiveSavingsGoal(goalId: Uuid) = Unit
         }
         composeRule.setContent {
             Column(Modifier.verticalScroll(rememberScrollState())) {

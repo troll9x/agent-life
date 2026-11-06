@@ -38,6 +38,7 @@ import vn.lifeos.app.finance.history.FinanceHistorySection
 import vn.lifeos.app.finance.refund.RefundAdjustmentSection
 import vn.lifeos.app.finance.reports.FinanceReportsSection
 import vn.lifeos.app.finance.inbox.FinanceInboxSection
+import vn.lifeos.app.finance.goals.SavingsGoalsSection
 import vn.lifeos.domain.common.RandomIdGenerator
 import vn.lifeos.domain.common.Uuid
 import vn.lifeos.domain.finance.*
@@ -179,6 +180,7 @@ internal fun FinanceEntryScreen(state: FinanceUiState, workspaceId: Uuid, zone: 
         FinanceHistorySection(workspaceId, state.transactions, state.accounts, state.categories, zone, now,
             state.busy, state.completedReplacementId) { command -> actions?.replacePosted(command) }
         FinanceInboxSection(state, zone, actions)
+        SavingsGoalsSection(state, workspaceId, zone, now, actions)
         RefundAdjustmentSection(workspaceId, state.accounts, state.transactions, state.balances,
             state.monthlyReports, zone, now, state.busy, state.error, state.confirmation, state.actionVersion,
             onRefund = { input -> actions?.postRefund(input) },

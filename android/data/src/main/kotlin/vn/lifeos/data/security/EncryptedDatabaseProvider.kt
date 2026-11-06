@@ -53,7 +53,8 @@ class EncryptedDatabaseProvider(
                 val database = Room.databaseBuilder(applicationContext, AgentLifeDatabase::class.java, databaseName)
                     .openHelperFactory(SupportOpenHelperFactory(encoded))
                     .addMigrations(FoundationMigrations.from1To2, FoundationMigrations.from2To3,
-                        PlannerMigration.from3To4, FinanceMigration.from4To5)
+                        PlannerMigration.from3To4, FinanceMigration.from4To5,
+                        vn.lifeos.data.finance.goals.SavingsGoalMigration.from5To6)
                     .build()
                 try {
                     database.openHelper.writableDatabase.query("SELECT COUNT(*) FROM sqlite_master").use { it.moveToFirst() }

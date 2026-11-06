@@ -95,6 +95,10 @@ class FinanceEntryUiTest {
             override fun approveInbox(candidateId: Uuid, accountId: Uuid, categoryId: Uuid) = Unit
             override fun linkInbox(candidateId: Uuid, transactionId: Uuid) = Unit
             override fun ignoreInbox(candidateId: Uuid) = Unit
+            override fun retrySavingsGoals() = Unit
+            override fun createSavingsGoal(name: String, targetText: String, targetDate: java.time.LocalDate?, accountIds: Set<Uuid>) = Unit
+            override fun changeSavingsGoalTarget(goalId: Uuid, targetText: String, targetDate: java.time.LocalDate?) = Unit
+            override fun archiveSavingsGoal(goalId: Uuid) = Unit
         }
         composeRule.setContent {
             FinanceEntryScreen(FinanceUiState(loading = false, accounts = listOf(bank, cash),

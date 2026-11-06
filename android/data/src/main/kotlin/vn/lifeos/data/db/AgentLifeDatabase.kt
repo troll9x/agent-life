@@ -12,6 +12,9 @@ import vn.lifeos.data.planner.TaskEntity
 import vn.lifeos.data.reminders.ReminderDao
 import vn.lifeos.data.finance.*
 import vn.lifeos.data.finance.imports.FinanceInboxDao
+import vn.lifeos.data.finance.goals.SavingsGoalEntity
+import vn.lifeos.data.finance.goals.SavingsGoalAccountEntity
+import vn.lifeos.data.finance.goals.SavingsGoalDao
 
 @Database(
     entities = [
@@ -22,8 +25,9 @@ import vn.lifeos.data.finance.imports.FinanceInboxDao
         CalendarEventEntity::class, RecurrenceExceptionEntity::class, ReminderEntity::class,
         AccountEntity::class, CategoryEntity::class, FinancialTransactionEntity::class, LedgerEntryEntity::class,
         SourceEvidenceEntity::class, ImportCandidateEntity::class, BudgetEntity::class, ReconciliationEntity::class,
+        SavingsGoalEntity::class, SavingsGoalAccountEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 abstract class AgentLifeDatabase : RoomDatabase() {
@@ -33,4 +37,5 @@ abstract class AgentLifeDatabase : RoomDatabase() {
     abstract fun reminderDao(): ReminderDao
     abstract fun financeDao(): FinanceDao
     abstract fun financeInboxDao(): FinanceInboxDao
+    abstract fun savingsGoalDao(): SavingsGoalDao
 }
