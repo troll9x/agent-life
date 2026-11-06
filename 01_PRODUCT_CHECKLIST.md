@@ -155,8 +155,8 @@ Mức PERSONAL · [Prompt nhiệm vụ](modules/04-finance/FIN-02.md)
 
 Mức PERSONAL · [Prompt nhiệm vụ](modules/04-finance/FIN-03.md)
 
-- [ ] **RQ-FIN-03-01** Số trên dashboard, danh sách và CSV đối chiếu được cùng kỳ/currency.
-- [ ] **RQ-FIN-03-02** Chuyển tiền sang tiết kiệm không tiêu ngân sách chi phí; refund giảm expense theo kỳ nhận refund.
+- [x] **RQ-FIN-03-01** Số trên dashboard, danh sách và CSV đối chiếu được cùng kỳ/currency. [Evidence](docs/progress/FIN-03.md)
+- [x] **RQ-FIN-03-02** Chuyển tiền sang tiết kiệm không tiêu ngân sách chi phí; refund giảm expense theo kỳ nhận refund. [Evidence](docs/progress/FIN-03.md)
 
 ### FIN-04 Hàng chờ nhập và ghép bằng chứng chống trùng
 

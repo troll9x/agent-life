@@ -11,6 +11,8 @@ interface FinanceDao {
     fun observeAccounts(workspaceId: String): Flow<List<AccountEntity>>
     @Query("SELECT * FROM categories WHERE workspaceId=:workspaceId ORDER BY name, id")
     fun observeCategories(workspaceId: String): Flow<List<CategoryEntity>>
+    @Query("SELECT * FROM categories WHERE workspaceId=:workspaceId ORDER BY name, id")
+    suspend fun categories(workspaceId: String): List<CategoryEntity>
     @Query("SELECT * FROM financial_transactions WHERE workspaceId=:workspaceId ORDER BY occurredAt DESC, id DESC LIMIT 50")
     fun observeRecentTransactions(workspaceId: String): Flow<List<FinancialTransactionEntity>>
     @Query("SELECT * FROM ledger_entries WHERE workspaceId=:workspaceId AND transactionId=:transactionId ORDER BY id")
@@ -37,6 +39,12 @@ interface FinanceDao {
     suspend fun refunds(workspaceId: String, expenseId: String): List<LedgerEntryEntity>
     @Query("SELECT t.* FROM financial_transactions t WHERE t.workspaceId=:workspaceId AND t.occurredAt>=:from AND t.occurredAt<:until ORDER BY t.occurredAt, t.id")
     suspend fun transactionsInPeriod(workspaceId: String, from: Long, until: Long): List<FinancialTransactionEntity>
+    @Query("SELECT * FROM budgets WHERE workspaceId=:workspaceId AND periodStartDate=:periodStartDate AND currency=:currency")
+    suspend fun budgetsInPeriod(workspaceId: String, periodStartDate: String, currency: String): List<BudgetEntity>
+    @Query("SELECT * FROM budgets WHERE workspaceId=:workspaceId AND categoryId=:categoryId AND periodStartDate=:periodStartDate AND currency=:currency LIMIT 1")
+    suspend fun budget(workspaceId: String, categoryId: String, periodStartDate: String, currency: String): BudgetEntity?
+    @Query("UPDATE budgets SET limitMinor=:limitMinor, alertThresholdBasisPoints=:threshold WHERE id=:id AND workspaceId=:workspaceId")
+    suspend fun updateBudget(id: String, workspaceId: String, limitMinor: Long, threshold: Int?): Int
     @Query("SELECT * FROM ledger_entries WHERE workspaceId=:workspaceId AND transactionId IN (:ids)")
     suspend fun entriesForTransactions(workspaceId: String, ids: List<String>): List<LedgerEntryEntity>
     @Query("SELECT id FROM workspaces WHERE id=:workspaceId AND deletedAt IS NULL")

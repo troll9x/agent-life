@@ -36,6 +36,7 @@ import vn.lifeos.app.planner.PlannerDatePicker
 import vn.lifeos.app.planner.PlannerDateTimePicker
 import vn.lifeos.app.finance.history.FinanceHistorySection
 import vn.lifeos.app.finance.refund.RefundAdjustmentSection
+import vn.lifeos.app.finance.reports.FinanceReportsSection
 import vn.lifeos.domain.common.RandomIdGenerator
 import vn.lifeos.domain.common.Uuid
 import vn.lifeos.domain.finance.*
@@ -180,6 +181,7 @@ internal fun FinanceEntryScreen(state: FinanceUiState, workspaceId: Uuid, zone: 
             state.monthlyReports, zone, now, state.busy, state.error, state.confirmation, state.actionVersion,
             onRefund = { input -> actions?.postRefund(input) },
             onAdjustment = { input -> actions?.postAdjustment(input) })
+        FinanceReportsSection(state, actions)
     }
 }
 

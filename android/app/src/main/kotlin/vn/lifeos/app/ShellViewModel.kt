@@ -113,9 +113,9 @@ internal class ShellViewModel(
                                     val ready = (mutableState.value.profile as? ProfileStatus.Ready)?.snapshot
                                     if (ready != null && financeFeature == null) {
                                         startFinance(access.database, ready.profile.workspaceId, ready.profile.baseCurrency,
-                                            ready.profile.zoneId)
+                                            ready.profile.zoneId, ready.profile.budgetStartDay)
                                     } else if (ready != null) {
-                                        financeFeature?.updateZone(ZoneId.of(ready.profile.zoneId))
+                                        financeFeature?.updateProfile(ZoneId.of(ready.profile.zoneId), ready.profile.budgetStartDay)
                                     }
                                     if (ready != null && plannerFeature == null) {
                                         startPlanner(access.database, ready.profile.workspaceId)
@@ -218,11 +218,17 @@ internal class ShellViewModel(
     override fun setDefaultWallet(accountId: Uuid) { financeFeature?.setDefaultWallet(accountId) }
     override fun clearFinanceError() { financeFeature?.clearFinanceError() }
     override fun retryFinance() { financeFeature?.retryFinance() }
+    override fun selectReportPeriod(monthOffset: Long) { financeFeature?.selectReportPeriod(monthOffset) }
+    override fun selectReportAccount(accountId: Uuid?) { financeFeature?.selectReportAccount(accountId) }
+    override fun saveReportBudget(categoryId: Uuid, amountText: String, thresholdEnabled: Boolean) {
+        financeFeature?.saveReportBudget(categoryId, amountText, thresholdEnabled)
+    }
+    override fun retryReport() { financeFeature?.retryReport() }
 
     private fun startFinance(database: vn.lifeos.data.db.AgentLifeDatabase, workspaceId: Uuid, currency: String,
-        zoneId: String) {
+        zoneId: String, budgetStartDay: Int) {
         financeFeature = try { container.financeFeature(database, workspaceId, CurrencyCode.of(currency),
-            ZoneId.of(zoneId), viewModelScope) }
+            ZoneId.of(zoneId), budgetStartDay, viewModelScope) }
             catch (_: Exception) { null }
         if (financeFeature == null) mutableState.value = mutableState.value.copy(
             finance = FinanceUiState(loading = false, loadFailed = true, error = "Không mở được sổ tài chính."))

@@ -25,6 +25,7 @@ import vn.lifeos.domain.finance.reversal.ReversalRepository
 import vn.lifeos.domain.finance.refund.ManualRefundAdjustmentCommands
 import vn.lifeos.domain.finance.refund.ManualRefundInput
 import vn.lifeos.domain.finance.refund.ManualAdjustmentInput
+import vn.lifeos.domain.finance.reports.*
 import vn.lifeos.domain.foundation.AppError
 import vn.lifeos.domain.foundation.Outcome
 
@@ -35,6 +36,9 @@ internal data class FinanceUiState(
     val transactions: List<PostedFinanceRow> = emptyList(), val balances: Map<Uuid, Long> = emptyMap(),
     val defaultWalletId: Uuid? = null, val completedReplacementId: Uuid? = null,
     val monthlyReports: Map<YearMonth, FinanceReport> = emptyMap(),
+    val report: ReportSnapshot? = null, val previousReport: ReportSnapshot? = null,
+    val reportLoading: Boolean = false, val reportError: String? = null,
+    val reportPeriod: ReportPeriod? = null, val reportAccountId: Uuid? = null,
 )
 
 internal interface FinanceActions {
@@ -47,6 +51,10 @@ internal interface FinanceActions {
     fun setDefaultWallet(accountId: Uuid)
     fun clearFinanceError()
     fun retryFinance()
+    fun selectReportPeriod(monthOffset: Long)
+    fun selectReportAccount(accountId: Uuid?)
+    fun saveReportBudget(categoryId: Uuid, amountText: String, thresholdEnabled: Boolean)
+    fun retryReport()
 }
 
 internal class DefaultWalletPreference(context: Context) {
@@ -60,6 +68,7 @@ internal class FinanceFeature(private val repository: FinanceRepository, private
     private val currency: CurrencyCode, private val ids: IdGenerator, private val clock: Clock,
     private val walletPreference: DefaultWalletPreference, private val scope: CoroutineScope,
     private val reversals: ReversalRepository? = null, private var zone: ZoneId = ZoneId.systemDefault(),
+    private val reports: FinanceReportsRepository? = null, private var budgetStartDay: Int = 1,
 ) : FinanceActions {
     private val commands = ManualFinanceCommands(repository, Locale.forLanguageTag("vi-VN"))
     private val corrections = ManualRefundAdjustmentCommands(repository, Locale.forLanguageTag("vi-VN"))
@@ -67,6 +76,7 @@ internal class FinanceFeature(private val repository: FinanceRepository, private
     val state: StateFlow<FinanceUiState> = mutable.asStateFlow()
     private var observeJob: Job? = null
     private var action: Job? = null
+    private var reportJob: Job? = null
 
     init { retryFinance() }
 
@@ -74,6 +84,57 @@ internal class FinanceFeature(private val repository: FinanceRepository, private
         if (zone == value) return
         zone = value
         retryFinance()
+    }
+
+    fun updateProfile(value: ZoneId, startDay: Int) {
+        if (zone == value && budgetStartDay == startDay) return
+        zone = value; budgetStartDay = startDay
+        mutable.value = mutable.value.copy(reportPeriod = null)
+        retryFinance()
+    }
+
+    override fun selectReportPeriod(monthOffset: Long) {
+        val period = mutable.value.reportPeriod ?: reportPeriodContaining(clock.instant().atZone(zone).toLocalDate(), budgetStartDay)
+        mutable.value = mutable.value.copy(reportPeriod = ReportPeriod(period.start.plusMonths(monthOffset), period.endExclusive.plusMonths(monthOffset)))
+        retryReport()
+    }
+
+    override fun selectReportAccount(accountId: Uuid?) {
+        mutable.value = mutable.value.copy(reportAccountId = accountId)
+        retryReport()
+    }
+
+    override fun retryReport() {
+        val source = reports ?: return
+        reportJob?.cancel()
+        val period = mutable.value.reportPeriod ?: reportPeriodContaining(clock.instant().atZone(zone).toLocalDate(), budgetStartDay)
+        val filter = ReportFilter(workspaceId, currency, period, zone, mutable.value.reportAccountId)
+        val previousFilter = filter.copy(period = period.previousComparable(clock.instant().atZone(zone).toLocalDate()))
+        mutable.value = mutable.value.copy(reportLoading = true, reportError = null, reportPeriod = period,
+            report = null, previousReport = null)
+        reportJob = scope.launch {
+            val current = source.load(filter)
+            val previous = source.load(previousFilter)
+            mutable.value = if (current is Outcome.Success && previous is Outcome.Success) mutable.value.copy(
+                reportLoading = false, report = FinanceReportUseCase.calculate(filter, current.value),
+                previousReport = FinanceReportUseCase.calculate(previousFilter, previous.value))
+            else mutable.value.copy(reportLoading = false, reportError = "Không đọc được báo cáo. Thử lại.")
+        }
+    }
+
+    override fun saveReportBudget(categoryId: Uuid, amountText: String, thresholdEnabled: Boolean) {
+        val source = reports ?: return
+        val period = mutable.value.reportPeriod ?: return
+        val amount = runCatching { vn.lifeos.domain.common.Money.parse(amountText, currency, Locale.forLanguageTag("vi-VN")) }.getOrNull()
+        if (amount == null || amount.amountMinor < 0) {
+            mutable.value = mutable.value.copy(reportError = "Ngân sách phải là số tiền không âm."); return
+        }
+        scope.launch {
+            val result = source.saveBudget(Budget(ids.newId(), workspaceId, categoryId, period.start,
+                currency, amount.amountMinor, if (thresholdEnabled) 8_000 else null))
+            if (result is Outcome.Success) retryReport()
+            else mutable.value = mutable.value.copy(reportError = "Không lưu được ngân sách. Thử lại.")
+        }
     }
 
     override fun retryFinance() {
@@ -116,6 +177,7 @@ internal class FinanceFeature(private val repository: FinanceRepository, private
                         error = if (failed) "Không tính được số dư hoặc báo cáo tài chính." else null,
                         accounts = accounts, categories = categories, transactions = transactions,
                         balances = balances, defaultWalletId = selected, monthlyReports = monthly)
+                    retryReport()
                 }
             }
         }

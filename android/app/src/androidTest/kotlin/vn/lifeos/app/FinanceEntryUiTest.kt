@@ -19,6 +19,7 @@ import vn.lifeos.app.finance.entry.FinanceEntryScreen
 import vn.lifeos.app.finance.entry.FinanceUiState
 import vn.lifeos.app.finance.history.FinanceHistorySection
 import vn.lifeos.app.finance.refund.RefundAdjustmentSection
+import vn.lifeos.app.finance.reports.FinanceReportsSection
 import vn.lifeos.domain.common.CurrencyCode
 import vn.lifeos.domain.common.Uuid
 import vn.lifeos.domain.finance.Account
@@ -40,6 +41,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.Modifier
 import java.time.YearMonth
+import java.time.LocalDate
+import vn.lifeos.domain.finance.reports.*
 
 @RunWith(AndroidJUnit4::class)
 class FinanceEntryUiTest {
@@ -50,6 +53,27 @@ class FinanceEntryUiTest {
         CurrencyCode.of("VND"), 10_000_000, Instant.parse("2026-10-01T00:00:00Z"))
     private val cash = Account(id(503), workspace, "Fixture cash", AccountKind.CASH,
         CurrencyCode.of("VND"), 0, Instant.parse("2026-10-01T00:00:00Z"))
+
+    @Test fun reportShowsSamePeriodTotalsAndBudget() {
+        val category = Category(id(504), workspace, "Fixture expense", CategoryDirection.EXPENSE)
+        val period = reportPeriodContaining(LocalDate.parse("2026-10-20"), 15)
+        val filter = ReportFilter(workspace, bank.currency, period, ZoneId.of("Asia/Ho_Chi_Minh"))
+        val row = FinancialTransaction(id(505), workspace, id(506), TransactionKind.EXPENSE,
+            Instant.parse("2026-10-16T00:00:00Z"), Instant.parse("2026-10-16T00:00:00Z"),
+            category.id, null, null, null, null, null, null)
+        val budget = vn.lifeos.domain.finance.Budget(id(507), workspace, category.id, period.start, bank.currency, 1000, 8000)
+        val report = FinanceReportUseCase.calculate(filter, ReportInput(listOf(ReportFact(
+            PostedFinanceRow(row, listOf(LedgerEntry(id(508), row.id, bank.id, -600, bank.currency))), null)),
+            listOf(category), listOf(budget)))
+        composeRule.setContent {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                FinanceReportsSection(FinanceUiState(loading = false, accounts = listOf(bank),
+                    categories = listOf(category), report = report, reportPeriod = period), null)
+            }
+        }
+        composeRule.onNodeWithText("Chi ròng: 600 VND").assertIsDisplayed()
+        composeRule.onNodeWithText("Còn 400 VND", substring = true).performScrollTo().assertIsDisplayed()
+    }
 
     @Test fun transferFormKeepsOperationIdAcrossRepeatedSaveAndShowsBalances() {
         val submitted = mutableListOf<ManualEntryInput>()
@@ -63,6 +87,10 @@ class FinanceEntryUiTest {
             override fun setDefaultWallet(accountId: Uuid) = Unit
             override fun clearFinanceError() = Unit
             override fun retryFinance() = Unit
+            override fun selectReportPeriod(monthOffset: Long) = Unit
+            override fun selectReportAccount(accountId: Uuid?) = Unit
+            override fun saveReportBudget(categoryId: Uuid, amountText: String, thresholdEnabled: Boolean) = Unit
+            override fun retryReport() = Unit
         }
         composeRule.setContent {
             FinanceEntryScreen(FinanceUiState(loading = false, accounts = listOf(bank, cash),

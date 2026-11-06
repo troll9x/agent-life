@@ -36,6 +36,7 @@ import vn.lifeos.domain.finance.AccountKind
 import vn.lifeos.domain.finance.Category
 import vn.lifeos.domain.finance.CategoryDirection
 import vn.lifeos.domain.foundation.Outcome
+import vn.lifeos.data.finance.reports.RoomFinanceReportsRepository
 
 @RunWith(AndroidJUnit4::class)
 class FinanceEntryEndToEndTest {
@@ -59,7 +60,8 @@ class FinanceEntryEndToEndTest {
         assertTrue(repository.createCategory(category) is Outcome.Success)
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
         val feature = FinanceFeature(repository, workspaceId, cash.currency, RandomIdGenerator,
-            app.appContainer.clock, DefaultWalletPreference(app), scope)
+            app.appContainer.clock, DefaultWalletPreference(app), scope,
+            zone = zone, reports = RoomFinanceReportsRepository(database))
         val now = app.appContainer.clock.instant()
         composeRule.setContent {
             val state by feature.state.collectAsState()
@@ -75,6 +77,9 @@ class FinanceEntryEndToEndTest {
         composeRule.onNodeWithTag("finance_save").performScrollTo().performClick()
         composeRule.waitUntil(30_000) {
             composeRule.onAllNodesWithText("Đã ghi giao dịch").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.waitUntil(30_000) {
+            composeRule.onAllNodesWithText("Thu: 500.000 VND").fetchSemanticsNodes().isNotEmpty()
         }
         assertEquals(500_000L, (repository.balance(workspaceId, cash.id, now.plusSeconds(60)) as Outcome.Success).value.amountMinor)
         scope.cancel()
