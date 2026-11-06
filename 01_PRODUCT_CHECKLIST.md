@@ -190,8 +190,8 @@ Mức PERSONAL · [Prompt nhiệm vụ](modules/04-finance/FIN-07.md)
 
 Mức PERSONAL · [Prompt nhiệm vụ](modules/04-finance/FIN-08.md)
 
-- [ ] **RQ-FIN-08-01** Sửa khoản 500000 thành 600000 cho net expense 600000, số dư chỉ giảm thêm 100000 trong cùng kỳ.
-- [ ] **RQ-FIN-08-02** Double submit/hai client cùng reverse một khoản chỉ có một reversal được chấp nhận.
+- [x] **RQ-FIN-08-01** Sửa khoản 500000 thành 600000 cho net expense 600000, số dư chỉ giảm thêm 100000 trong cùng kỳ. [Evidence](docs/progress/FIN-08.md)
+- [x] **RQ-FIN-08-02** Double submit/hai client cùng reverse một khoản chỉ có một reversal được chấp nhận. [Evidence](docs/progress/FIN-08.md)
 
 ### FIN-09 Hoàn tiền và điều chỉnh số dư có lý do
 

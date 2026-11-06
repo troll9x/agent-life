@@ -20,6 +20,7 @@ import vn.lifeos.app.planner.PlannerFeature
 import kotlinx.coroutines.CoroutineScope
 import vn.lifeos.app.reminders.ReminderEngine
 import vn.lifeos.data.finance.RoomFinanceRepository
+import vn.lifeos.data.finance.reversal.RoomReversalRepository
 import vn.lifeos.domain.finance.FinanceRepository
 import vn.lifeos.app.finance.entry.DefaultWalletPreference
 import vn.lifeos.app.finance.entry.FinanceFeature
@@ -41,7 +42,8 @@ class AppContainer(context: Context, databaseProvider: EncryptedDatabaseProvider
         RoomFinanceRepository(database, clock, RandomIdGenerator)
     internal fun financeFeature(database: AgentLifeDatabase, workspaceId: Uuid, currency: CurrencyCode,
         scope: CoroutineScope): FinanceFeature = FinanceFeature(financeRepository(database), workspaceId,
-        currency, RandomIdGenerator, clock, DefaultWalletPreference(applicationContext), scope)
+        currency, RandomIdGenerator, clock, DefaultWalletPreference(applicationContext), scope,
+        RoomReversalRepository(database, clock, RandomIdGenerator))
     internal suspend fun plannerFeature(database: AgentLifeDatabase, workspaceId: Uuid, scope: CoroutineScope): PlannerFeature? {
         val repository = RoomPlannerRepository(database, clock)
         val deviceId = repository.workspaceDeviceId(workspaceId) ?: return null

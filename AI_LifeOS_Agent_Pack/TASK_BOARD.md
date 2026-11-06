@@ -66,7 +66,7 @@ Bảng khởi tạo: chưa có code nào trong bộ này được coi là IMPLEM
 | [REL-03](modules/16-release/REL-03.md) | SAAS | TODO | NOT_RUN | Chưa có |
 | [FIN-06](modules/04-finance/FIN-06.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
 | [FIN-07](modules/04-finance/FIN-07.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
-| [FIN-08](modules/04-finance/FIN-08.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
+| [FIN-08](modules/04-finance/FIN-08.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/FIN-08.md): reversal+replacement atomic, 31/31 data AVD, 2/2 Compose, lint/APK PASS |
 | [FIN-09](modules/04-finance/FIN-09.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
 | [FIN-10](modules/04-finance/FIN-10.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
 | [INSIGHT-01](modules/10-finance-insights/INSIGHT-01.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |

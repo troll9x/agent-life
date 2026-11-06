@@ -38,6 +38,7 @@ import vn.lifeos.domain.common.CurrencyCode
 import vn.lifeos.domain.finance.AccountKind
 import vn.lifeos.domain.finance.CategoryDirection
 import vn.lifeos.domain.finance.commands.ManualEntryInput
+import vn.lifeos.domain.finance.reversal.ReplacePostedTransaction
 
 internal sealed interface ProfileStatus {
     data object Loading : ProfileStatus
@@ -206,6 +207,7 @@ internal class ShellViewModel(
         financeFeature?.createCategory(name, direction)
     }
     override fun postManual(input: ManualEntryInput) { financeFeature?.postManual(input) }
+    override fun replacePosted(command: ReplacePostedTransaction) { financeFeature?.replacePosted(command) }
     override fun setDefaultWallet(accountId: Uuid) { financeFeature?.setDefaultWallet(accountId) }
     override fun clearFinanceError() { financeFeature?.clearFinanceError() }
     override fun retryFinance() { financeFeature?.retryFinance() }

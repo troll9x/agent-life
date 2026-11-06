@@ -62,9 +62,17 @@ class RoomFinanceRepository(private val database: AgentLifeDatabase, private val
     override suspend fun post(command: PostFinanceCommand): Outcome<FinancialTransaction> = write {
         if (dao.activeWorkspace(command.workspaceId.value) == null) return@write Outcome.Failure(AppError.NotFound)
         if (dao.byOperation(command.workspaceId.value, command.operationId.value) != null) return@write Outcome.Failure(AppError.Conflict)
+        val replacementOfId = command.replacementOfId
+        if (replacementOfId != null) {
+            if (command.kind !in setOf(TransactionKind.INCOME, TransactionKind.EXPENSE, TransactionKind.TRANSFER))
+                return@write invalid("replacementOfId")
+            if (dao.reversal(command.workspaceId.value, replacementOfId.value) == null ||
+                dao.replacement(command.workspaceId.value, replacementOfId.value) != null)
+                return@write Outcome.Failure(AppError.Conflict)
+        }
         val sourceRow = dao.account(command.workspaceId.value, command.accountId.value) ?: return@write invalid("accountId")
         val source = sourceRow.domain()
-        if (source.archivedAt != null) return@write invalid("accountId")
+        if (source.archivedAt != null && command.kind != TransactionKind.REVERSAL) return@write invalid("accountId")
         if (!command.occurredAt.isAfter(source.openingAsOf)) return@write invalid("occurredAt")
         if (command.amount.amountMinor <= 0 || command.amount.currency != source.currency) return@write invalid("amount")
         val destination = command.destinationAccountId?.let { dao.account(command.workspaceId.value, it.value)?.domain() }
@@ -132,7 +140,7 @@ class RoomFinanceRepository(private val database: AgentLifeDatabase, private val
             if (command.kind == TransactionKind.REVERSAL) related?.categoryId else category?.id,
             command.payee?.trim(), command.note?.trim(),
             related?.id.takeIf { command.kind == TransactionKind.REVERSAL },
-            related?.id.takeIf { command.kind == TransactionKind.REFUND }, null, command.debtId?.value)
+            related?.id.takeIf { command.kind == TransactionKind.REFUND }, command.replacementOfId?.value, command.debtId?.value)
         dao.insertTransaction(header)
         entries.forEach { (account, delta) ->
             require(delta != 0L) { "deltaMinor" }

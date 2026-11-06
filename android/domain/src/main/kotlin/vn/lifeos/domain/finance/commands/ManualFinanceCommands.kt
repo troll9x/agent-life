@@ -15,7 +15,12 @@ data class ManualEntryInput(val transactionId: Uuid, val operationId: Uuid, val 
 
 /** Parses the user's positive magnitude with an explicit locale before entering the ledger. */
 class ManualFinanceCommands(private val repository: FinanceRepository, private val locale: Locale) {
-    suspend fun post(input: ManualEntryInput): Outcome<FinancialTransaction> {
+    suspend fun post(input: ManualEntryInput): Outcome<FinancialTransaction> = when (val prepared = prepare(input)) {
+        is Outcome.Success -> repository.post(prepared.value)
+        is Outcome.Failure -> prepared
+    }
+
+    fun prepare(input: ManualEntryInput): Outcome<PostFinanceCommand> {
         if (input.kind !in setOf(TransactionKind.INCOME, TransactionKind.EXPENSE, TransactionKind.TRANSFER))
             return invalid("kind")
         if (input.source.workspaceId != input.workspaceId || input.source.archivedAt != null) return invalid("accountId")
@@ -35,7 +40,7 @@ class ManualFinanceCommands(private val repository: FinanceRepository, private v
             catch (_: IllegalArgumentException) { return invalid("amount") }
             catch (_: ArithmeticException) { return invalid("amount") }
         if (amount.amountMinor <= 0) return invalid("amount")
-        return repository.post(PostFinanceCommand(input.transactionId, input.workspaceId, input.operationId,
+        return Outcome.Success(PostFinanceCommand(input.transactionId, input.workspaceId, input.operationId,
             input.kind, input.source.id, amount, input.occurredAt, input.category?.id,
             input.destination?.id, payee = input.payee?.takeIf(String::isNotBlank),
             note = input.note?.takeIf(String::isNotBlank), sourceKind = FinanceSourceKind.MANUAL))

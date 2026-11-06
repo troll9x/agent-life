@@ -17,13 +17,24 @@ import org.junit.runner.RunWith
 import vn.lifeos.app.finance.entry.FinanceActions
 import vn.lifeos.app.finance.entry.FinanceEntryScreen
 import vn.lifeos.app.finance.entry.FinanceUiState
+import vn.lifeos.app.finance.history.FinanceHistorySection
 import vn.lifeos.domain.common.CurrencyCode
 import vn.lifeos.domain.common.Uuid
 import vn.lifeos.domain.finance.Account
 import vn.lifeos.domain.finance.AccountKind
+import vn.lifeos.domain.finance.Category
 import vn.lifeos.domain.finance.CategoryDirection
+import vn.lifeos.domain.finance.FinancialTransaction
+import vn.lifeos.domain.finance.LedgerEntry
+import vn.lifeos.domain.finance.PostedFinanceRow
 import vn.lifeos.domain.finance.TransactionKind
 import vn.lifeos.domain.finance.commands.ManualEntryInput
+import vn.lifeos.domain.finance.reversal.ReplacePostedTransaction
+import androidx.compose.ui.test.performTextClearance
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.Modifier
 
 @RunWith(AndroidJUnit4::class)
 class FinanceEntryUiTest {
@@ -41,6 +52,7 @@ class FinanceEntryUiTest {
             override fun createAccount(name: String, kind: AccountKind, openingText: String, openingAsOf: Instant) = Unit
             override fun createCategory(name: String, direction: CategoryDirection) = Unit
             override fun postManual(input: ManualEntryInput) { submitted += input }
+            override fun replacePosted(command: ReplacePostedTransaction) = Unit
             override fun setDefaultWallet(accountId: Uuid) = Unit
             override fun clearFinanceError() = Unit
             override fun retryFinance() = Unit
@@ -63,5 +75,31 @@ class FinanceEntryUiTest {
         assertEquals("1000000", submitted[0].amountText)
         assertEquals(submitted[0].operationId, submitted[1].operationId)
         assertEquals(submitted[0].transactionId, submitted[1].transactionId)
+    }
+
+    @Test fun historyEditShowsBalanceEffectAndKeepsOperationIdsForRetry() {
+        val submitted = mutableListOf<ReplacePostedTransaction>()
+        val occurred = Instant.parse("2026-10-29T12:00:00Z")
+        val category = Category(id(504), workspace, "Fixture expense", CategoryDirection.EXPENSE)
+        val original = FinancialTransaction(id(505), workspace, id(506), TransactionKind.EXPENSE,
+            occurred, occurred, category.id, null, null, null, null, null, null)
+        composeRule.setContent {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                FinanceHistorySection(workspace, listOf(PostedFinanceRow(original,
+                    listOf(LedgerEntry(id(507), original.id, bank.id, -500_000, bank.currency)))),
+                    listOf(bank, cash), listOf(category), ZoneId.of("Asia/Ho_Chi_Minh"),
+                    Instant.parse("2026-10-30T02:00:00Z"), false, null) { submitted += it }
+            }
+        }
+        composeRule.onNodeWithTag("finance_edit_${original.id.value}").performScrollTo().performClick()
+        composeRule.onNodeWithTag("finance_edit_amount").performScrollTo().performTextClearance()
+        composeRule.onNodeWithTag("finance_edit_amount").performTextInput("600000")
+        composeRule.onNodeWithText("Dự kiến thay đổi số dư Fixture bank: -100.000 VND").assertIsDisplayed()
+        composeRule.onNodeWithTag("finance_replace").performScrollTo().performClick()
+        composeRule.onNodeWithTag("finance_replace").performClick()
+        assertEquals(2, submitted.size)
+        assertEquals(original.id, submitted.first().originalId)
+        assertEquals(submitted[0].reversalOperationId, submitted[1].reversalOperationId)
+        assertEquals(submitted[0].replacement.operationId, submitted[1].replacement.operationId)
     }
 }

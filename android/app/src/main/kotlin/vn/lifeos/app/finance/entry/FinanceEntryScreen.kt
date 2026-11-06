@@ -34,6 +34,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import vn.lifeos.app.planner.PlannerDatePicker
 import vn.lifeos.app.planner.PlannerDateTimePicker
+import vn.lifeos.app.finance.history.FinanceHistorySection
 import vn.lifeos.domain.common.RandomIdGenerator
 import vn.lifeos.domain.common.Uuid
 import vn.lifeos.domain.finance.*
@@ -172,12 +173,8 @@ internal fun FinanceEntryScreen(state: FinanceUiState, workspaceId: Uuid, zone: 
                     if (kind == TransactionKind.TRANSFER.name) null else category, amount, instant, payee, note))
             }
         }) { Text(if (state.busy) "Đang lưu…" else "Lưu giao dịch") }
-        Text("Giao dịch gần đây", style = MaterialTheme.typography.titleLarge)
-        if (state.transactions.isEmpty()) Text("Chưa có giao dịch đã ghi.")
-        state.transactions.forEach { row ->
-            val amountMinor = row.entries.firstOrNull()?.deltaMinor?.let { if (it < 0) -it else it } ?: 0L
-            Text("${row.transaction.kind.name} · ${displayNumbers.format(amountMinor)} ${row.entries.firstOrNull()?.currency?.value.orEmpty()} · ${row.transaction.occurredAt.atZone(zone).toLocalDate()}")
-        }
+        FinanceHistorySection(workspaceId, state.transactions, state.accounts, state.categories, zone, now,
+            state.busy, state.completedReplacementId) { command -> actions?.replacePosted(command) }
     }
 }
 

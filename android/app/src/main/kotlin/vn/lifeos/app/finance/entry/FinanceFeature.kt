@@ -18,6 +18,8 @@ import vn.lifeos.domain.common.Uuid
 import vn.lifeos.domain.finance.*
 import vn.lifeos.domain.finance.commands.ManualEntryInput
 import vn.lifeos.domain.finance.commands.ManualFinanceCommands
+import vn.lifeos.domain.finance.reversal.ReplacePostedTransaction
+import vn.lifeos.domain.finance.reversal.ReversalRepository
 import vn.lifeos.domain.foundation.AppError
 import vn.lifeos.domain.foundation.Outcome
 
@@ -26,13 +28,14 @@ internal data class FinanceUiState(
     val error: String? = null, val confirmation: String? = null, val actionVersion: Long = 0,
     val accounts: List<Account> = emptyList(), val categories: List<Category> = emptyList(),
     val transactions: List<PostedFinanceRow> = emptyList(), val balances: Map<Uuid, Long> = emptyMap(),
-    val defaultWalletId: Uuid? = null,
+    val defaultWalletId: Uuid? = null, val completedReplacementId: Uuid? = null,
 )
 
 internal interface FinanceActions {
     fun createAccount(name: String, kind: AccountKind, openingText: String, openingAsOf: Instant)
     fun createCategory(name: String, direction: CategoryDirection)
     fun postManual(input: ManualEntryInput)
+    fun replacePosted(command: ReplacePostedTransaction)
     fun setDefaultWallet(accountId: Uuid)
     fun clearFinanceError()
     fun retryFinance()
@@ -48,6 +51,7 @@ internal class DefaultWalletPreference(context: Context) {
 internal class FinanceFeature(private val repository: FinanceRepository, private val workspaceId: Uuid,
     private val currency: CurrencyCode, private val ids: IdGenerator, private val clock: Clock,
     private val walletPreference: DefaultWalletPreference, private val scope: CoroutineScope,
+    private val reversals: ReversalRepository? = null,
 ) : FinanceActions {
     private val commands = ManualFinanceCommands(repository, Locale.forLanguageTag("vi-VN"))
     private val mutable = MutableStateFlow(FinanceUiState())
@@ -102,6 +106,34 @@ internal class FinanceFeature(private val repository: FinanceRepository, private
     override fun postManual(input: ManualEntryInput) {
         if (input.workspaceId != workspaceId) { mutable.value = mutable.value.copy(error = "Workspace không khớp."); return }
         submit("Đã ghi giao dịch", input.transactionId) { commands.post(input) }
+    }
+
+    override fun replacePosted(command: ReplacePostedTransaction) {
+        if (command.replacement.workspaceId != workspaceId) {
+            mutable.value = mutable.value.copy(error = "Workspace không khớp."); return
+        }
+        val service = reversals ?: run {
+            mutable.value = mutable.value.copy(error = "Không mở được lịch sử sửa giao dịch."); return
+        }
+        if (action?.isActive == true) return
+        action = scope.launch {
+            mutable.value = mutable.value.copy(busy = true, error = null, confirmation = null)
+            val result = try { service.replace(command) }
+                catch (cancelled: CancellationException) { throw cancelled }
+                catch (_: Exception) { Outcome.Failure(AppError.Storage) }
+            mutable.value = when (result) {
+                is Outcome.Success -> mutable.value.copy(busy = false, confirmation = "Đã lưu bản sửa",
+                    completedReplacementId = result.value.replacement.id,
+                    actionVersion = mutable.value.actionVersion + 1)
+                is Outcome.Failure -> mutable.value.copy(busy = false,
+                    error = when (val error = result.error) {
+                        AppError.Conflict -> "Giao dịch đã được sửa, có hoàn tiền hoặc dữ liệu đã đổi. Kiểm tra lịch sử trước khi thử lại."
+                        is AppError.InvalidInput -> "Bản sửa chưa hợp lệ: ${error.field}."
+                        AppError.NotFound -> "Không tìm thấy giao dịch gốc."
+                        AppError.Storage -> "Không lưu được bản sửa. Thử lại."
+                    })
+            }
+        }
     }
 
     override fun setDefaultWallet(accountId: Uuid) {

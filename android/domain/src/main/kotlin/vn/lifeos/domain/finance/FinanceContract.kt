@@ -43,7 +43,8 @@ data class PostFinanceCommand(val id: Uuid, val workspaceId: Uuid, val operation
     val kind: TransactionKind, val accountId: Uuid, val amount: Money, val occurredAt: Instant,
     val categoryId: Uuid? = null, val destinationAccountId: Uuid? = null, val relatedTransactionId: Uuid? = null,
     val debtId: Uuid? = null, val payee: String? = null, val note: String? = null,
-    val adjustmentDeltaMinor: Long? = null, val sourceKind: FinanceSourceKind = FinanceSourceKind.MANUAL)
+    val adjustmentDeltaMinor: Long? = null, val sourceKind: FinanceSourceKind = FinanceSourceKind.MANUAL,
+    val replacementOfId: Uuid? = null)
 
 data class FinanceReportQuery(val workspaceId: Uuid, val currency: CurrencyCode,
     val startInclusive: Instant, val endExclusive: Instant)

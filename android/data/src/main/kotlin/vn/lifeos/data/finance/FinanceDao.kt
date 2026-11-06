@@ -27,6 +27,8 @@ interface FinanceDao {
     suspend fun transaction(workspaceId: String, id: String): FinancialTransactionEntity?
     @Query("SELECT * FROM financial_transactions WHERE workspaceId=:workspaceId AND reversesId=:id")
     suspend fun reversal(workspaceId: String, id: String): FinancialTransactionEntity?
+    @Query("SELECT * FROM financial_transactions WHERE workspaceId=:workspaceId AND replacementOfId=:id LIMIT 1")
+    suspend fun replacement(workspaceId: String, id: String): FinancialTransactionEntity?
     @Query("SELECT e.* FROM ledger_entries e JOIN financial_transactions t ON t.id=e.transactionId AND t.workspaceId=e.workspaceId WHERE e.workspaceId=:workspaceId AND e.accountId=:accountId AND t.occurredAt>:from AND t.occurredAt<=:through")
     suspend fun entriesForBalance(workspaceId: String, accountId: String, from: Long, through: Long): List<LedgerEntryEntity>
     @Query("SELECT * FROM ledger_entries WHERE workspaceId=:workspaceId AND transactionId=:transactionId ORDER BY id")
