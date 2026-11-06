@@ -39,6 +39,8 @@ import vn.lifeos.domain.finance.AccountKind
 import vn.lifeos.domain.finance.CategoryDirection
 import vn.lifeos.domain.finance.commands.ManualEntryInput
 import vn.lifeos.domain.finance.reversal.ReplacePostedTransaction
+import vn.lifeos.domain.finance.refund.ManualRefundInput
+import vn.lifeos.domain.finance.refund.ManualAdjustmentInput
 
 internal sealed interface ProfileStatus {
     data object Loading : ProfileStatus
@@ -110,7 +112,10 @@ internal class ShellViewModel(
                                     })
                                     val ready = (mutableState.value.profile as? ProfileStatus.Ready)?.snapshot
                                     if (ready != null && financeFeature == null) {
-                                        startFinance(access.database, ready.profile.workspaceId, ready.profile.baseCurrency)
+                                        startFinance(access.database, ready.profile.workspaceId, ready.profile.baseCurrency,
+                                            ready.profile.zoneId)
+                                    } else if (ready != null) {
+                                        financeFeature?.updateZone(ZoneId.of(ready.profile.zoneId))
                                     }
                                     if (ready != null && plannerFeature == null) {
                                         startPlanner(access.database, ready.profile.workspaceId)
@@ -208,12 +213,16 @@ internal class ShellViewModel(
     }
     override fun postManual(input: ManualEntryInput) { financeFeature?.postManual(input) }
     override fun replacePosted(command: ReplacePostedTransaction) { financeFeature?.replacePosted(command) }
+    override fun postRefund(input: ManualRefundInput) { financeFeature?.postRefund(input) }
+    override fun postAdjustment(input: ManualAdjustmentInput) { financeFeature?.postAdjustment(input) }
     override fun setDefaultWallet(accountId: Uuid) { financeFeature?.setDefaultWallet(accountId) }
     override fun clearFinanceError() { financeFeature?.clearFinanceError() }
     override fun retryFinance() { financeFeature?.retryFinance() }
 
-    private fun startFinance(database: vn.lifeos.data.db.AgentLifeDatabase, workspaceId: Uuid, currency: String) {
-        financeFeature = try { container.financeFeature(database, workspaceId, CurrencyCode.of(currency), viewModelScope) }
+    private fun startFinance(database: vn.lifeos.data.db.AgentLifeDatabase, workspaceId: Uuid, currency: String,
+        zoneId: String) {
+        financeFeature = try { container.financeFeature(database, workspaceId, CurrencyCode.of(currency),
+            ZoneId.of(zoneId), viewModelScope) }
             catch (_: Exception) { null }
         if (financeFeature == null) mutableState.value = mutableState.value.copy(
             finance = FinanceUiState(loading = false, loadFailed = true, error = "Không mở được sổ tài chính."))

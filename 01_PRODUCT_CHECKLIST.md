@@ -197,8 +197,8 @@ Mức PERSONAL · [Prompt nhiệm vụ](modules/04-finance/FIN-08.md)
 
 Mức PERSONAL · [Prompt nhiệm vụ](modules/04-finance/FIN-09.md)
 
-- [ ] **RQ-FIN-09-01** Chi 500000, refund 100000 -> net expense 400000 và income 0 trong cùng kỳ.
-- [ ] **RQ-FIN-09-02** Adjustment đổi số dư nhưng không làm AI/report coi đó là thu nhập hoặc chi phí tiêu dùng.
+- [x] **RQ-FIN-09-01** Chi 500000, refund 100000 -> net expense 400000 và income 0 trong cùng kỳ. [Evidence](docs/progress/FIN-09.md)
+- [ ] **RQ-FIN-09-02** Adjustment đổi số dư nhưng không làm AI/report coi đó là thu nhập hoặc chi phí tiêu dùng. [Evidence](docs/progress/FIN-09.md): ledger/report PASS, AI runtime NOT_RUN.
 
 ### FIN-10 Đối soát tài khoản và chênh lệch
 

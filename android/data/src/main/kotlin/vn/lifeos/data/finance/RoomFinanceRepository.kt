@@ -105,6 +105,7 @@ class RoomFinanceRepository(private val database: AgentLifeDatabase, private val
                 if (related?.kind != TransactionKind.EXPENSE.name || dao.reversal(command.workspaceId.value, related.id) != null)
                     return@write invalid("relatedTransactionId")
                 val original = dao.entries(command.workspaceId.value, related.id).singleOrNull() ?: return@write invalid("relatedTransactionId")
+                if (original.deltaMinor >= 0L || related.categoryId == null) return@write invalid("relatedTransactionId")
                 if (original.currency != command.amount.currency.value) return@write invalid("currency")
                 val refunded = dao.refunds(command.workspaceId.value, related.id).fold(0L) { sum, it -> Math.addExact(sum, it.deltaMinor) }
                 if (command.amount.amountMinor > Math.subtractExact(Math.negateExact(original.deltaMinor), refunded))
@@ -127,7 +128,10 @@ class RoomFinanceRepository(private val database: AgentLifeDatabase, private val
                     account to Math.negateExact(entry.deltaMinor)
                 }.also { if (it.isEmpty()) return@write invalid("relatedTransactionId") }
             }
-            TransactionKind.ADJUSTMENT -> listOf(source to command.adjustmentDeltaMinor!!)
+            TransactionKind.ADJUSTMENT -> {
+                if (command.relatedTransactionId != null) return@write invalid("relatedTransactionId")
+                listOf(source to command.adjustmentDeltaMinor!!)
+            }
             else -> {
                 if (command.relatedTransactionId != null) return@write invalid("relatedTransactionId")
                 LedgerRules.entries(command.kind, command.amount, source, destination)
@@ -137,7 +141,8 @@ class RoomFinanceRepository(private val database: AgentLifeDatabase, private val
         val now = clock.instant()
         val header = FinancialTransactionEntity(command.id.value, command.workspaceId.value, command.operationId.value,
             command.kind.name, command.occurredAt.toEpochMilli(), now.toEpochMilli(),
-            if (command.kind == TransactionKind.REVERSAL) related?.categoryId else category?.id,
+            if (command.kind == TransactionKind.REVERSAL || command.kind == TransactionKind.REFUND)
+                related?.categoryId else category?.id,
             command.payee?.trim(), command.note?.trim(),
             related?.id.takeIf { command.kind == TransactionKind.REVERSAL },
             related?.id.takeIf { command.kind == TransactionKind.REFUND }, command.replacementOfId?.value, command.debtId?.value)

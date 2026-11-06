@@ -24,6 +24,11 @@ import vn.lifeos.domain.common.Uuid
 import vn.lifeos.domain.finance.*
 import vn.lifeos.domain.finance.commands.ManualEntryInput
 import vn.lifeos.domain.finance.commands.ManualFinanceCommands
+import vn.lifeos.domain.finance.refund.ManualRefundAdjustmentCommands
+import vn.lifeos.domain.finance.refund.ManualRefundInput
+import vn.lifeos.domain.finance.refund.ManualAdjustmentInput
+import kotlinx.coroutines.async
+import kotlinx.coroutines.Dispatchers
 import java.util.Locale
 import vn.lifeos.domain.foundation.AppError
 import vn.lifeos.domain.foundation.CreatePersonalWorkspace
@@ -196,5 +201,89 @@ class RoomFinanceRepositoryTest {
         assertEquals(2, (persisted.observeRecentTransactions(workspace).first() as Outcome.Success).value.size)
         assertEquals("MANUAL", reopened.financeDao().evidenceForTransaction(workspace.value, expense.transactionId.value).single().sourceKind)
         reopened.close()
+    }
+
+    @Test fun refundUsesOriginalCategoryAndActualMonthWithSignedNetExpense() = runBlocking {
+        val db = setup("finance-refund-month.db")
+        val repo = RoomFinanceRepository(db, clock, RandomIdGenerator)
+        repo.createAccount(bank)
+        val category = Category(id(890), workspace, "Fixture expense", CategoryDirection.EXPENSE)
+        repo.createCategory(category)
+        val october = now.minusSeconds(86_400)
+        val expense = (repo.post(PostFinanceCommand(id(891), workspace, id(892), TransactionKind.EXPENSE,
+            bank.id, Money(500_000, vnd), october, categoryId = category.id)) as Outcome.Success).value
+        val row = PostedFinanceRow(expense, listOf(LedgerEntry(id(893), expense.id, bank.id, -500_000, vnd)))
+        val commands = ManualRefundAdjustmentCommands(repo, Locale.forLanguageTag("vi-VN"))
+        val first = (commands.refund(ManualRefundInput(id(894), id(895), workspace, row, bank,
+            "100000", now, "Fixture partial")) as Outcome.Success).value
+        assertEquals(expense.id, first.refundOfId)
+        assertEquals(category.id, first.categoryId)
+        assertEquals(9_600_000L, (repo.balance(workspace, bank.id, now) as Outcome.Success).value.amountMinor)
+        val same = (repo.report(FinanceReportQuery(workspace, vnd, start, now.plusSeconds(1))) as Outcome.Success).value
+        assertEquals(0L, same.incomeMinor)
+        assertEquals(500_000L, same.grossExpenseMinor)
+        assertEquals(100_000L, same.refundMinor)
+        assertEquals(400_000L, same.netExpenseMinor)
+        assertEquals(Outcome.Failure(AppError.InvalidInput("amount")), commands.refund(
+            ManualRefundInput(id(896), id(897), workspace, row, bank, "600000", now, null)))
+        assertEquals(Outcome.Failure(AppError.Conflict), commands.refund(
+            ManualRefundInput(id(898), id(895), workspace, row, bank, "100000", now, null)))
+        db.close()
+
+        val nextDb = setup("finance-refund-next-month.db")
+        val nextRepo = RoomFinanceRepository(nextDb, clock, RandomIdGenerator)
+        nextRepo.createAccount(bank); nextRepo.createCategory(category)
+        val oldExpense = (nextRepo.post(PostFinanceCommand(id(899), workspace, id(900), TransactionKind.EXPENSE,
+            bank.id, Money(500_000, vnd), now.minusSeconds(86_400), categoryId = category.id)) as Outcome.Success).value
+        val oldRow = PostedFinanceRow(oldExpense, listOf(LedgerEntry(id(901), oldExpense.id, bank.id, -500_000, vnd)))
+        val november = Instant.parse("2026-11-06T12:00:00Z")
+        assertTrue(ManualRefundAdjustmentCommands(nextRepo, Locale.forLanguageTag("vi-VN")).refund(
+            ManualRefundInput(id(902), id(903), workspace, oldRow, bank, "100000", november, null)) is Outcome.Success)
+        val report = (nextRepo.report(FinanceReportQuery(workspace, vnd,
+            Instant.parse("2026-11-01T00:00:00Z"), november.plusSeconds(1))) as Outcome.Success).value
+        assertEquals(0L, report.incomeMinor)
+        assertEquals(0L, report.grossExpenseMinor)
+        assertEquals(-100_000L, report.netExpenseMinor)
+        nextDb.close()
+    }
+
+    @Test fun adjustmentChangesBalanceButNeverIncomeOrExpense() = runBlocking {
+        val db = setup("finance-adjustment.db")
+        val repo = RoomFinanceRepository(db, clock, RandomIdGenerator)
+        repo.createAccount(bank)
+        val commands = ManualRefundAdjustmentCommands(repo, Locale.forLanguageTag("vi-VN"))
+        assertEquals(Outcome.Failure(AppError.InvalidInput("reason")), commands.adjust(
+            ManualAdjustmentInput(id(910), id(911), workspace, bank, "-250000", now, " ")))
+        assertTrue(commands.adjust(ManualAdjustmentInput(id(912), id(913), workspace, bank,
+            "-250000", now, "Fixture counted cash")) is Outcome.Success)
+        assertTrue(commands.adjust(ManualAdjustmentInput(id(914), id(915), workspace, bank,
+            "50000", now, "Fixture correction")) is Outcome.Success)
+        assertEquals("Fixture counted cash", db.financeDao().transaction(workspace.value, id(912).value)?.note)
+        assertEquals(9_800_000L, (repo.balance(workspace, bank.id, now) as Outcome.Success).value.amountMinor)
+        val report = (repo.report(FinanceReportQuery(workspace, vnd, start, now.plusSeconds(1))) as Outcome.Success).value
+        assertEquals(0L, report.incomeMinor)
+        assertEquals(0L, report.grossExpenseMinor)
+        assertEquals(0L, report.netExpenseMinor)
+        db.close()
+    }
+
+    @Test fun concurrentPartialRefundsCannotExceedOriginal() = runBlocking {
+        val db = setup("finance-refund-race.db")
+        val repo = RoomFinanceRepository(db, clock, RandomIdGenerator)
+        repo.createAccount(bank)
+        val category = Category(id(920), workspace, "Fixture expense", CategoryDirection.EXPENSE)
+        repo.createCategory(category)
+        val original = (repo.post(PostFinanceCommand(id(921), workspace, id(922), TransactionKind.EXPENSE,
+            bank.id, Money(500_000, vnd), now.minusSeconds(60), categoryId = category.id)) as Outcome.Success).value
+        val row = PostedFinanceRow(original, listOf(LedgerEntry(id(923), original.id, bank.id, -500_000, vnd)))
+        val a = async(Dispatchers.Default) { ManualRefundAdjustmentCommands(RoomFinanceRepository(db, clock, RandomIdGenerator),
+            Locale.forLanguageTag("vi-VN")).refund(ManualRefundInput(id(924), id(925), workspace, row, bank, "300000", now, null)) }
+        val b = async(Dispatchers.Default) { ManualRefundAdjustmentCommands(RoomFinanceRepository(db, clock, RandomIdGenerator),
+            Locale.forLanguageTag("vi-VN")).refund(ManualRefundInput(id(926), id(927), workspace, row, bank, "300000", now, null)) }
+        val results = listOf(a.await(), b.await())
+        assertEquals(1, results.count { it is Outcome.Success })
+        assertEquals(1, results.count { it == Outcome.Failure(AppError.InvalidInput("amount")) })
+        assertEquals(300_000L, (repo.report(FinanceReportQuery(workspace, vnd, start, now.plusSeconds(1))) as Outcome.Success).value.refundMinor)
+        db.close()
     }
 }

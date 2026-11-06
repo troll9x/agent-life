@@ -67,7 +67,7 @@ Bảng khởi tạo: chưa có code nào trong bộ này được coi là IMPLEM
 | [FIN-06](modules/04-finance/FIN-06.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
 | [FIN-07](modules/04-finance/FIN-07.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
 | [FIN-08](modules/04-finance/FIN-08.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/FIN-08.md): reversal+replacement atomic, 31/31 data AVD, 2/2 Compose, lint/APK PASS |
-| [FIN-09](modules/04-finance/FIN-09.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
+| [FIN-09](modules/04-finance/FIN-09.md) | PERSONAL | IMPLEMENTED | NOT_REQUIRED | [Evidence](../docs/progress/FIN-09.md): refund/category/period, signed adjustment, data AVD 34/34, Compose 3/3, lint/APK PASS; RQ-FIN-09-02 chờ AI consumer runtime |
 | [FIN-10](modules/04-finance/FIN-10.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
 | [INSIGHT-01](modules/10-finance-insights/INSIGHT-01.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
 | [INSIGHT-02](modules/10-finance-insights/INSIGHT-02.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |

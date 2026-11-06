@@ -18,6 +18,7 @@ import vn.lifeos.app.finance.entry.FinanceActions
 import vn.lifeos.app.finance.entry.FinanceEntryScreen
 import vn.lifeos.app.finance.entry.FinanceUiState
 import vn.lifeos.app.finance.history.FinanceHistorySection
+import vn.lifeos.app.finance.refund.RefundAdjustmentSection
 import vn.lifeos.domain.common.CurrencyCode
 import vn.lifeos.domain.common.Uuid
 import vn.lifeos.domain.finance.Account
@@ -27,14 +28,18 @@ import vn.lifeos.domain.finance.CategoryDirection
 import vn.lifeos.domain.finance.FinancialTransaction
 import vn.lifeos.domain.finance.LedgerEntry
 import vn.lifeos.domain.finance.PostedFinanceRow
+import vn.lifeos.domain.finance.FinanceReport
 import vn.lifeos.domain.finance.TransactionKind
 import vn.lifeos.domain.finance.commands.ManualEntryInput
 import vn.lifeos.domain.finance.reversal.ReplacePostedTransaction
+import vn.lifeos.domain.finance.refund.ManualRefundInput
+import vn.lifeos.domain.finance.refund.ManualAdjustmentInput
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.Modifier
+import java.time.YearMonth
 
 @RunWith(AndroidJUnit4::class)
 class FinanceEntryUiTest {
@@ -53,6 +58,8 @@ class FinanceEntryUiTest {
             override fun createCategory(name: String, direction: CategoryDirection) = Unit
             override fun postManual(input: ManualEntryInput) { submitted += input }
             override fun replacePosted(command: ReplacePostedTransaction) = Unit
+            override fun postRefund(input: ManualRefundInput) = Unit
+            override fun postAdjustment(input: ManualAdjustmentInput) = Unit
             override fun setDefaultWallet(accountId: Uuid) = Unit
             override fun clearFinanceError() = Unit
             override fun retryFinance() = Unit
@@ -101,5 +108,37 @@ class FinanceEntryUiTest {
         assertEquals(original.id, submitted.first().originalId)
         assertEquals(submitted[0].reversalOperationId, submitted[1].reversalOperationId)
         assertEquals(submitted[0].replacement.operationId, submitted[1].replacement.operationId)
+    }
+
+    @Test fun refundMonthAndAdjustmentPreviewStaySeparateFromIncome() {
+        val refunds = mutableListOf<ManualRefundInput>()
+        val adjustments = mutableListOf<ManualAdjustmentInput>()
+        val occurred = Instant.parse("2026-10-29T12:00:00Z")
+        val original = FinancialTransaction(id(510), workspace, id(511), TransactionKind.EXPENSE,
+            occurred, occurred, id(512), null, null, null, null, null, null)
+        composeRule.setContent {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                RefundAdjustmentSection(workspace, listOf(bank), listOf(PostedFinanceRow(original,
+                    listOf(LedgerEntry(id(513), original.id, bank.id, -500_000, bank.currency)))),
+                    mapOf(bank.id to 9_500_000), mapOf(YearMonth.of(2026, 11) to
+                        FinanceReport(0, 0, 100_000, -100_000)), ZoneId.of("Asia/Ho_Chi_Minh"),
+                    Instant.parse("2026-11-06T02:00:00Z"), false, null, null, 0,
+                    onRefund = { refunds += it }, onAdjustment = { adjustments += it })
+            }
+        }
+        composeRule.onNodeWithTag("finance_report_2026-11").performScrollTo()
+        composeRule.onNodeWithText("Hoàn tiền: 100.000 · Thực chi: -100.000").assertIsDisplayed()
+        composeRule.onNodeWithTag("finance_refund_original_${original.id.value}").performScrollTo().performClick()
+        composeRule.onNodeWithTag("finance_refund_amount").performScrollTo().performTextInput("100000")
+        composeRule.onNodeWithTag("finance_refund_save").performScrollTo().performClick()
+        assertEquals(original.id, refunds.single().original.transaction.id)
+        composeRule.onNodeWithTag("finance_adjustment_account_${bank.id.value}").performScrollTo().performClick()
+        composeRule.onNodeWithTag("finance_adjustment_amount").performScrollTo().performTextInput("-250000")
+        composeRule.onNodeWithTag("finance_adjustment_preview").performScrollTo()
+        composeRule.onNodeWithText("Xem trước: Fixture bank 9.500.000 → 9.250.000 VND").assertIsDisplayed()
+        composeRule.onNodeWithTag("finance_adjustment_reason").performScrollTo().performTextInput("Fixture reason")
+        composeRule.onNodeWithTag("finance_adjustment_save").performScrollTo().performClick()
+        assertEquals("-250000", adjustments.single().signedAmountText)
+        assertEquals("Fixture reason", adjustments.single().reason)
     }
 }

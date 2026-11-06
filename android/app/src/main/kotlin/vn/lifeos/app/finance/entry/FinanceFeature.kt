@@ -3,6 +3,8 @@ package vn.lifeos.app.finance.entry
 import android.content.Context
 import java.time.Clock
 import java.time.Instant
+import java.time.YearMonth
+import java.time.ZoneId
 import java.util.Locale
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -20,6 +22,9 @@ import vn.lifeos.domain.finance.commands.ManualEntryInput
 import vn.lifeos.domain.finance.commands.ManualFinanceCommands
 import vn.lifeos.domain.finance.reversal.ReplacePostedTransaction
 import vn.lifeos.domain.finance.reversal.ReversalRepository
+import vn.lifeos.domain.finance.refund.ManualRefundAdjustmentCommands
+import vn.lifeos.domain.finance.refund.ManualRefundInput
+import vn.lifeos.domain.finance.refund.ManualAdjustmentInput
 import vn.lifeos.domain.foundation.AppError
 import vn.lifeos.domain.foundation.Outcome
 
@@ -29,6 +34,7 @@ internal data class FinanceUiState(
     val accounts: List<Account> = emptyList(), val categories: List<Category> = emptyList(),
     val transactions: List<PostedFinanceRow> = emptyList(), val balances: Map<Uuid, Long> = emptyMap(),
     val defaultWalletId: Uuid? = null, val completedReplacementId: Uuid? = null,
+    val monthlyReports: Map<YearMonth, FinanceReport> = emptyMap(),
 )
 
 internal interface FinanceActions {
@@ -36,6 +42,8 @@ internal interface FinanceActions {
     fun createCategory(name: String, direction: CategoryDirection)
     fun postManual(input: ManualEntryInput)
     fun replacePosted(command: ReplacePostedTransaction)
+    fun postRefund(input: ManualRefundInput)
+    fun postAdjustment(input: ManualAdjustmentInput)
     fun setDefaultWallet(accountId: Uuid)
     fun clearFinanceError()
     fun retryFinance()
@@ -51,15 +59,22 @@ internal class DefaultWalletPreference(context: Context) {
 internal class FinanceFeature(private val repository: FinanceRepository, private val workspaceId: Uuid,
     private val currency: CurrencyCode, private val ids: IdGenerator, private val clock: Clock,
     private val walletPreference: DefaultWalletPreference, private val scope: CoroutineScope,
-    private val reversals: ReversalRepository? = null,
+    private val reversals: ReversalRepository? = null, private var zone: ZoneId = ZoneId.systemDefault(),
 ) : FinanceActions {
     private val commands = ManualFinanceCommands(repository, Locale.forLanguageTag("vi-VN"))
+    private val corrections = ManualRefundAdjustmentCommands(repository, Locale.forLanguageTag("vi-VN"))
     private val mutable = MutableStateFlow(FinanceUiState())
     val state: StateFlow<FinanceUiState> = mutable.asStateFlow()
     private var observeJob: Job? = null
     private var action: Job? = null
 
     init { retryFinance() }
+
+    fun updateZone(value: ZoneId) {
+        if (zone == value) return
+        zone = value
+        retryFinance()
+    }
 
     override fun retryFinance() {
         observeJob?.cancel()
@@ -84,12 +99,23 @@ internal class FinanceFeature(private val repository: FinanceRepository, private
                             is Outcome.Failure -> failed = true
                         }
                     }
+                    val months = (transactions.map { YearMonth.from(it.transaction.occurredAt.atZone(zone)) } +
+                        YearMonth.from(clock.instant().atZone(zone))).distinct().sortedDescending()
+                    val monthly = mutableMapOf<YearMonth, FinanceReport>()
+                    months.forEach { month ->
+                        val start = month.atDay(1).atStartOfDay(zone).toInstant()
+                        val end = month.plusMonths(1).atDay(1).atStartOfDay(zone).toInstant()
+                        when (val report = repository.report(FinanceReportQuery(workspaceId, currency, start, end))) {
+                            is Outcome.Success -> monthly[month] = report.value
+                            is Outcome.Failure -> failed = true
+                        }
+                    }
                     val selected = walletPreference.get(workspaceId)?.takeIf { id -> accounts.any { it.id == id } }
                         ?: accounts.firstOrNull { it.kind == AccountKind.CASH }?.id
                     mutable.value = mutable.value.copy(loading = false, loadFailed = failed,
-                        error = if (failed) "Không tính được số dư tài khoản." else null,
+                        error = if (failed) "Không tính được số dư hoặc báo cáo tài chính." else null,
                         accounts = accounts, categories = categories, transactions = transactions,
-                        balances = balances, defaultWalletId = selected)
+                        balances = balances, defaultWalletId = selected, monthlyReports = monthly)
                 }
             }
         }
@@ -106,6 +132,16 @@ internal class FinanceFeature(private val repository: FinanceRepository, private
     override fun postManual(input: ManualEntryInput) {
         if (input.workspaceId != workspaceId) { mutable.value = mutable.value.copy(error = "Workspace không khớp."); return }
         submit("Đã ghi giao dịch", input.transactionId) { commands.post(input) }
+    }
+
+    override fun postRefund(input: ManualRefundInput) {
+        if (input.workspaceId != workspaceId) { mutable.value = mutable.value.copy(error = "Workspace không khớp."); return }
+        submit("Đã ghi hoàn tiền", input.id) { corrections.refund(input) }
+    }
+
+    override fun postAdjustment(input: ManualAdjustmentInput) {
+        if (input.workspaceId != workspaceId) { mutable.value = mutable.value.copy(error = "Workspace không khớp."); return }
+        submit("Đã ghi điều chỉnh", input.id) { corrections.adjust(input) }
     }
 
     override fun replacePosted(command: ReplacePostedTransaction) {
