@@ -40,6 +40,7 @@ Refund chọn expense đã post, giữ link `refundOfId` và category của expe
 | `adb -s emulator-5554 shell am instrument -w -e class vn.lifeos.app.FinanceEntryEndToEndTest vn.lifeos.app.test/androidx.test.runner.AndroidJUnitRunner` | Cùng AVD | `OK (1 test)` với DB mã hóa. |
 | `./gradlew.bat :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --console=plain -q`; `adb -s emulator-5554 shell am instrument -w -e class vn.lifeos.app.DeviceZoneSyncTest vn.lifeos.app.test/androidx.test.runner.AndroidJUnitRunner` | Cùng máy/AVD, sau nối cập nhật múi giờ | Gradle exit 0; zone sync `OK (1 test)`. |
 | `adb -s emulator-5554 install -r android/app/build/outputs/apk/debug/app-debug.apk`; mở Finance, cuộn xuống | Cùng AVD | Install `Success`; UI dump thấy form “Hoàn tiền”, “Điều chỉnh số dư”, “Ghi điều chỉnh” và giá trị “Thực chi” ở bảng tháng. |
+| `gh run watch 42160140888 --exit-status --interval 10` | GitHub Actions commit `3b528a1` | [Android run 42160140888](https://github.com/troll9x/agent-life/actions/runs/42160140888) success; unit test, lint và debug APK PASS. |
 | `git diff --check` | Repo root | Exit 0. |
 
 ## Kịch bản và dữ liệu
