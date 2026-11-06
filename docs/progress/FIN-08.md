@@ -37,6 +37,7 @@ Người dùng mở lịch sử Tài chính, chọn giao dịch thu/chi/chuyển
 | `adb -s emulator-5554 shell am instrument -w vn.lifeos.data.test/androidx.test.runner.AndroidJUnitRunner` | Cùng AVD | `OK (31 tests)`. |
 | `adb -s emulator-5554 shell am instrument -w -e class vn.lifeos.app.FinanceEntryUiTest vn.lifeos.app.test/androidx.test.runner.AndroidJUnitRunner` | Cùng AVD | Vòng đầu test fixture thiếu scroll semantics; đã sửa fixture, vòng sau `OK (2 tests)`. |
 | `adb -s emulator-5554 install -r android/app/build/outputs/apk/debug/app-debug.apk`; mở `MainActivity`, vào Finance và cuộn xuống | Cùng AVD | Install `Success`; UI dump thấy “Tài khoản và số dư”, “Lịch sử giao dịch”, “Sửa bằng giao dịch mới”. |
+| `gh run watch 42158369350 --exit-status --interval 10` | GitHub Actions commit `182044d` | [Android run 42158369350](https://github.com/troll9x/agent-life/actions/runs/42158369350) success; unit test, lint và debug APK PASS. |
 | `git diff --check` | Repo root | Exit 0. |
 
 ## Kịch bản và dữ liệu
