@@ -107,6 +107,7 @@ private fun DebtCard(position: DebtPosition, state: DebtUiState, accounts: List<
         Text("${debt.counterpartyLabel} · ${if (debt.role == DebtRole.BORROWER) "Tôi đi vay" else "Tôi cho vay"}",
             style = MaterialTheme.typography.titleMedium)
         Text("Gốc còn lại: ${money(position.outstandingMinor, debt.currency)}", Modifier.testTag("debt_outstanding"))
+        Text("Gốc khi bắt đầu theo dõi: ${money(debt.openingPrincipalMinor, debt.currency)}")
         Text("Lãi đã ghi: ${money(position.interestMinor, debt.currency)} · Phí đã ghi: ${money(position.feeMinor, debt.currency)}")
         Text("Hạn trả: ${debt.dueDate?.toString() ?: "Chưa nhập"}")
         TextButton(onClick = { expanded = !expanded }) { Text("Ghi biến động / xem lịch sử") }

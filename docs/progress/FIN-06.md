@@ -4,6 +4,8 @@
 
 Implementation: **VERIFIED bằng fixture offline**. External gate: **NOT_REQUIRED** cho FIN-06. Kiểm ngày **12/11/2026**, JBR Android Studio, AVD riêng `AgentLife_Isolated_Test_API_37` (`emulator-5554`, API 37).
 
+Commit nghiệp vụ: `9ea1ce4`; follow-up bổ sung hiển thị gốc ban đầu và evidence có kiểm app riêng bên dưới.
+
 Người dùng tạo khoản đi vay/cho vay, tên gợi nhớ đối tác, gốc ban đầu và hạn trả tùy chọn. Gốc ban đầu là dư nợ đã có, không tạo dòng tiền. Giải ngân/hoàn trả ghi `LOAN_PRINCIPAL_IN/OUT`; lãi và phí ghi các transaction thu/chi riêng, chọn nhóm riêng. UI có bước review từng thành phần, date/time picker, dư gốc, tổng lãi/phí và lịch sử biến động. Sửa sai bằng đảo toàn bộ biến động có lý do và audit; giữ nguyên ledger gốc.
 
 ## Prerequisite và hợp đồng
@@ -45,6 +47,9 @@ Trong `android/`, đặt `JAVA_HOME=C:\Program Files\Android\Android Studio\jbr`
 | `adb -s emulator-5554 shell am instrument -w vn.lifeos.data.test/androidx.test.runner.AndroidJUnitRunner` | `OK (44 tests)`, gồm 1 debt migration + 3 debt repository, regression ledger/reversal/goals/inbox/reports và SQLCipher. |
 | `adb -s emulator-5554 shell am instrument -w -e class vn.lifeos.app.FinanceDebtUiTest,vn.lifeos.app.FinanceDebtEndToEndTest,vn.lifeos.app.FinanceEntryUiTest vn.lifeos.app.test/androidx.test.runner.AndroidJUnitRunner` | `OK (6 tests)`: review, E2E mã hóa và regression tài chính. |
 | `git diff --check` | Exit 0, chỉ cảnh báo LF/CRLF của Git. |
+| `./gradlew.bat :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --console=plain -q` | Exit 0 sau bổ sung hiển thị gốc ban đầu trên thẻ khoản vay. |
+| `adb -s emulator-5554 shell am instrument -w -e class vn.lifeos.app.FinanceDebtUiTest,vn.lifeos.app.FinanceDebtEndToEndTest vn.lifeos.app.test/androidx.test.runner.AndroidJUnitRunner` | Cài lại app/test APK bản cuối (`Success`), `OK (2 tests)`. |
+| `git push origin main`; `gh run watch 43144466885 --exit-status --interval 15` | Commit `9ea1ce4` đã đẩy; [Android CI 43144466885](https://github.com/troll9x/agent-life/actions/runs/43144466885) success, unit tests/lint/debug APK PASS. |
 
 ## Kịch bản và dữ liệu
 
