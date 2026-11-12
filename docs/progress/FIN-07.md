@@ -4,6 +4,8 @@
 
 Implementation: **VERIFIED offline/bằng fixture**, kiểm ngày **12/11/2026**. External gate: **EXTERNAL_BLOCKED** đối với nguồn email/notification ngân hàng thật kế thừa FIN-04. Không gọi API thật.
 
+Commit code được kiểm: `193b1de`.
+
 Rule hỗ trợ một lần, ngày, tuần, tháng, năm; lưu nextDueDate và template thu/chi. Khi đến ngày, engine sinh occurrence có unique workspace/ruleId/dueDate và bản chụp title/amount/currency/account/category. Tạo dự kiến, chạy engine lại, nhắc hoặc skip không ghi ledger. Chỉ confirm qua review mới post hoặc ghép giao dịch đã có. Khi sửa rule chỉ đổi lần chưa sinh; các snapshot/history đã sinh được giữ nguyên. Có tạm dừng/bật lại. Tiền dùng Long minor units và Money theo locale, không Sheets.
 
 ## Prerequisite và hợp đồng
@@ -46,6 +48,7 @@ Môi trường Windows, JBR Android Studio tại `C:\Program Files\Android\Andro
 | `adb -s emulator-5554 shell am instrument -w vn.lifeos.data.test/androidx.test.runner.AndroidJUnitRunner` | `OK (51 tests)`: 6 scheduled repository + 1 migration mới, regression ledger/debt/goals/inbox/reports/planner/reminders/SQLCipher. |
 | `adb -s emulator-5554 shell am instrument -w -e class vn.lifeos.app.FinanceScheduledUiTest,vn.lifeos.app.FinanceScheduledReminderTest,vn.lifeos.app.FinanceEntryUiTest,vn.lifeos.app.FinanceInboxUiTest,vn.lifeos.app.ReminderEngineTest vn.lifeos.app.test/androidx.test.runner.AndroidJUnitRunner` | `OK (8 tests)`: E2E Compose/DB mã hóa, alarm tài chính, regression tài chính/inbox/reminder planner. |
 | `git diff --check` | Exit 0, chỉ cảnh báo LF/CRLF. |
+| `git push origin main`; `gh run watch 43154795033 --exit-status --interval 15` | Commit `193b1de` đã đẩy; [Android CI 43154795033](https://github.com/troll9x/agent-life/actions/runs/43154795033) success, unit tests/lint/debug APK PASS. |
 
 ## Kịch bản và dữ liệu
 
