@@ -204,7 +204,7 @@ Mức PERSONAL · [Prompt nhiệm vụ](modules/04-finance/FIN-09.md)
 
 Mức PERSONAL · [Prompt nhiệm vụ](modules/04-finance/FIN-10.md)
 
-- [ ] **RQ-FIN-10-01** Đối soát cùng mốc thời gian ra đúng difference và không tự thay balance.
+- [x] **RQ-FIN-10-01** Đối soát cùng mốc thời gian ra đúng difference và không tự thay balance.
 - [ ] **RQ-FIN-10-02** Trạng thái thiếu nguồn/chưa đối soát được truyền vào báo cáo và lời khuyên AI.
 
 ## NOTI Thông báo ngân hàng Android

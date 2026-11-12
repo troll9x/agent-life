@@ -48,12 +48,13 @@ class AppContainer(context: Context, databaseProvider: EncryptedDatabaseProvider
         scope: CoroutineScope): FinanceFeature = FinanceFeature(financeRepository(database), workspaceId,
         currency, RandomIdGenerator, clock, DefaultWalletPreference(applicationContext), scope,
         RoomReversalRepository(database, clock, RandomIdGenerator), zone,
-        RoomFinanceReportsRepository(database), budgetStartDay,
+        RoomFinanceReportsRepository(database, clock), budgetStartDay,
         RoomFinanceInboxRepository(database, clock, RandomIdGenerator),
         RoomSavingsGoalRepository(database, clock),
         vn.lifeos.data.finance.debt.RoomDebtRepository(database, clock, RandomIdGenerator),
         vn.lifeos.data.finance.scheduled.RoomScheduledFinanceRepository(database, clock, RandomIdGenerator),
-        { vn.lifeos.app.reminders.ReminderWorkSchedule.enqueue(applicationContext) })
+        { vn.lifeos.app.reminders.ReminderWorkSchedule.enqueue(applicationContext) },
+        vn.lifeos.data.finance.reconciliation.RoomReconciliationRepository(database, clock, RandomIdGenerator))
     internal suspend fun plannerFeature(database: AgentLifeDatabase, workspaceId: Uuid, scope: CoroutineScope): PlannerFeature? {
         val repository = RoomPlannerRepository(database, clock)
         val deviceId = repository.workspaceDeviceId(workspaceId) ?: return null

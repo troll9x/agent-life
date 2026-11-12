@@ -37,7 +37,8 @@ data class ReportFilter(val workspaceId: Uuid, val currency: CurrencyCode, val p
 }
 
 data class ReportFact(val row: PostedFinanceRow, val originalKind: TransactionKind?)
-data class ReportInput(val facts: List<ReportFact>, val categories: List<Category>, val budgets: List<Budget>)
+data class ReportInput(val facts: List<ReportFact>, val categories: List<Category>, val budgets: List<Budget>,
+    val quality: vn.lifeos.domain.finance.reconciliation.FinancialDataQuality = vn.lifeos.domain.finance.reconciliation.FinancialDataQuality())
 
 interface FinanceReportsRepository {
     suspend fun load(filter: ReportFilter): Outcome<ReportInput>
@@ -58,7 +59,8 @@ data class BudgetStatus(val budget: Budget, val categoryName: String, val spentM
     } ?: false
 }
 
-data class ReportSnapshot(val filter: ReportFilter, val lines: List<ReportLine>, val budgets: List<BudgetStatus>) {
+data class ReportSnapshot(val filter: ReportFilter, val lines: List<ReportLine>, val budgets: List<BudgetStatus>,
+    val quality: vn.lifeos.domain.finance.reconciliation.FinancialDataQuality = vn.lifeos.domain.finance.reconciliation.FinancialDataQuality()) {
     val incomeMinor: Long get() = lines.fold(0L) { sum, line -> Math.addExact(sum, line.incomeMinor) }
     val grossExpenseMinor: Long get() = lines.fold(0L) { sum, line -> Math.addExact(sum, line.grossExpenseMinor) }
     val refundMinor: Long get() = lines.fold(0L) { sum, line -> Math.addExact(sum, line.refundMinor) }
@@ -85,7 +87,7 @@ object FinanceReportUseCase {
         val budgets = input.budgets.filter { it.currency == filter.currency && it.periodStartDate == filter.period.start }
             .map { budget -> BudgetStatus(budget, names[budget.categoryId] ?: "Nhóm đã xóa",
                 lines.filter { it.categoryId == budget.categoryId }.fold(0L) { sum, line -> Math.addExact(sum, line.netExpenseMinor) }) }
-        return ReportSnapshot(filter, lines, budgets)
+        return ReportSnapshot(filter, lines, budgets, input.quality)
     }
 }
 

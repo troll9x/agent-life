@@ -17,7 +17,7 @@ import vn.lifeos.domain.finance.reports.*
 import vn.lifeos.domain.foundation.AppError
 import vn.lifeos.domain.foundation.Outcome
 
-class RoomFinanceReportsRepository(private val database: AgentLifeDatabase) : FinanceReportsRepository {
+class RoomFinanceReportsRepository(private val database: AgentLifeDatabase, private val clock: java.time.Clock = java.time.Clock.systemUTC()) : FinanceReportsRepository {
     private val dao = database.financeDao()
 
     override suspend fun load(filter: ReportFilter): Outcome<ReportInput> = safe {
@@ -40,7 +40,8 @@ class RoomFinanceReportsRepository(private val database: AgentLifeDatabase) : Fi
             val categories = dao.categories(filter.workspaceId.value).map { it.domain() }
             val budgets = dao.budgetsInPeriod(filter.workspaceId.value, filter.period.start.toString(), filter.currency.value)
                 .map { it.domain() }
-            Outcome.Success(ReportInput(facts, categories, budgets))
+            val quality = vn.lifeos.data.finance.reconciliation.RoomFinancialQualityReader(database, clock).load(filter)
+            Outcome.Success(ReportInput(facts, categories, budgets, quality))
         }
     }
 

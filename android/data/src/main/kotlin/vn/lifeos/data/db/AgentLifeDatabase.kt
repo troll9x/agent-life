@@ -46,4 +46,5 @@ abstract class AgentLifeDatabase : RoomDatabase() {
     abstract fun savingsGoalDao(): SavingsGoalDao
     abstract fun debtDao(): DebtDao
     abstract fun scheduledDao(): vn.lifeos.data.finance.scheduled.ScheduledDao
+    abstract fun reconciliationDao(): vn.lifeos.data.finance.reconciliation.ReconciliationDao
 }

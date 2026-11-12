@@ -52,9 +52,11 @@ internal data class FinanceUiState(
     val savingsGoals: List<SavingsGoal> = emptyList(), val goalOverview: GoalOverview? = null,
     val debt: DebtUiState = DebtUiState(),
     val scheduled: vn.lifeos.app.finance.scheduled.ScheduledUiState = vn.lifeos.app.finance.scheduled.ScheduledUiState(),
+    val reconciliation: vn.lifeos.app.finance.reconciliation.ReconciliationUiState = vn.lifeos.app.finance.reconciliation.ReconciliationUiState(),
 )
 
 internal interface FinanceActions {
+    val reconciliationActions: vn.lifeos.app.finance.reconciliation.ReconciliationActions? get() = null
     val scheduledActions: vn.lifeos.app.finance.scheduled.ScheduledActions? get() = null
     val debtActions: DebtActions? get() = null
     fun createAccount(name: String, kind: AccountKind, openingText: String, openingAsOf: Instant)
@@ -97,6 +99,7 @@ internal class FinanceFeature(private val repository: FinanceRepository, private
     debtRepository: DebtRepository? = null,
     scheduledRepository: vn.lifeos.domain.finance.scheduled.ScheduledFinanceRepository? = null,
     rescheduleFinance: () -> Unit = {},
+    reconciliationRepository: vn.lifeos.domain.finance.reconciliation.ReconciliationRepository? = null,
 ) : FinanceActions {
     private val commands = ManualFinanceCommands(repository, Locale.forLanguageTag("vi-VN"))
     private val corrections = ManualRefundAdjustmentCommands(repository, Locale.forLanguageTag("vi-VN"))
@@ -113,8 +116,14 @@ internal class FinanceFeature(private val repository: FinanceRepository, private
     override val scheduledActions = scheduledRepository?.let {
         vn.lifeos.app.finance.scheduled.ScheduledFeature(it, workspaceId, zone, clock, scope, rescheduleFinance)
     }
+    override val reconciliationActions = reconciliationRepository?.let {
+        vn.lifeos.app.finance.reconciliation.ReconciliationFeature(it, workspaceId, clock, scope, ::retryReport)
+    }
 
     init {
+        reconciliationActions?.let { feature -> scope.launch {
+            feature.state.collect { mutable.value = mutable.value.copy(reconciliation = it) }
+        } }
         scheduledActions?.let { feature -> scope.launch {
             feature.state.collect { mutable.value = mutable.value.copy(scheduled = it) }
         } }

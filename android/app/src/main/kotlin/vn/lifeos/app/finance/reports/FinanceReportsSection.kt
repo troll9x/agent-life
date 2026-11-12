@@ -74,6 +74,7 @@ internal fun FinanceReportsSection(state: FinanceUiState, actions: FinanceAction
                 TextButton(onClick = { actions?.retryReport() }) { Text("Thử lại") }
             }
             if (report != null) {
+                vn.lifeos.app.finance.reconciliation.FinanceQualityNotice(report.quality)
                 val currency = report.filter.currency.value
                 Text("Thu: ${numbers.format(report.incomeMinor)} $currency")
                 TextButton(onClick = { drillCategory = null; drillMetric = "income" }) { Text("Xem khoản thu") }

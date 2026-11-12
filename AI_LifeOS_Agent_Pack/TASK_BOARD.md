@@ -68,7 +68,7 @@ Bảng khởi tạo: chưa có code nào trong bộ này được coi là IMPLEM
 | [FIN-07](modules/04-finance/FIN-07.md) | PERSONAL | VERIFIED | EXTERNAL_BLOCKED | [Evidence](../docs/progress/FIN-07.md): occurrence chỉ post sau confirm, ghép evidence fixture, reminder chung, Room v8; domain 2/2, data AVD 51/51, app 8/8, lint/APK PASS; kế thừa gate nguồn ngân hàng thật FIN-04 |
 | [FIN-08](modules/04-finance/FIN-08.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/FIN-08.md): reversal+replacement atomic, 31/31 data AVD, 2/2 Compose, lint/APK PASS |
 | [FIN-09](modules/04-finance/FIN-09.md) | PERSONAL | IMPLEMENTED | NOT_REQUIRED | [Evidence](../docs/progress/FIN-09.md): refund/category/period, signed adjustment, data AVD 34/34, Compose 3/3, lint/APK PASS; RQ-FIN-09-02 chờ AI consumer runtime |
-| [FIN-10](modules/04-finance/FIN-10.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
+| [FIN-10](modules/04-finance/FIN-10.md) | PERSONAL | IMPLEMENTED | EXTERNAL_BLOCKED | [Evidence](../docs/progress/FIN-10.md): snapshot/resolve/FIN-09 review, quality vào report và advice contract; domain 2/2, data AVD 55/55, app 8/8, lint/APK PASS; RQ-FIN-10-02 chờ AI consumer, kế thừa gate nguồn ngân hàng thật |
 | [INSIGHT-01](modules/10-finance-insights/INSIGHT-01.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
 | [INSIGHT-02](modules/10-finance-insights/INSIGHT-02.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
 | [INSIGHT-03](modules/10-finance-insights/INSIGHT-03.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
