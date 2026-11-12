@@ -176,8 +176,8 @@ Mức PERSONAL · [Prompt nhiệm vụ](modules/04-finance/FIN-05.md)
 
 Mức PERSONAL · [Prompt nhiệm vụ](modules/04-finance/FIN-06.md)
 
-- [ ] **RQ-FIN-06-01** Gốc vay/cho vay và hoàn gốc thay đúng balance/principal, không cộng thu/chi tiêu dùng.
-- [ ] **RQ-FIN-06-02** Lãi/phí được thống kê riêng, principal outstanding đối chiếu được từng movement.
+- [x] **RQ-FIN-06-01** Gốc vay/cho vay và hoàn gốc thay đúng balance/principal, không cộng thu/chi tiêu dùng.
+- [x] **RQ-FIN-06-02** Lãi/phí được thống kê riêng, principal outstanding đối chiếu được từng movement.
 
 ### FIN-07 Giao dịch định kỳ và khoản dự kiến
 

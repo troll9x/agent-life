@@ -15,6 +15,9 @@ import vn.lifeos.data.finance.imports.FinanceInboxDao
 import vn.lifeos.data.finance.goals.SavingsGoalEntity
 import vn.lifeos.data.finance.goals.SavingsGoalAccountEntity
 import vn.lifeos.data.finance.goals.SavingsGoalDao
+import vn.lifeos.data.finance.debt.DebtAgreementEntity
+import vn.lifeos.data.finance.debt.DebtMovementEntity
+import vn.lifeos.data.finance.debt.DebtDao
 
 @Database(
     entities = [
@@ -26,8 +29,9 @@ import vn.lifeos.data.finance.goals.SavingsGoalDao
         AccountEntity::class, CategoryEntity::class, FinancialTransactionEntity::class, LedgerEntryEntity::class,
         SourceEvidenceEntity::class, ImportCandidateEntity::class, BudgetEntity::class, ReconciliationEntity::class,
         SavingsGoalEntity::class, SavingsGoalAccountEntity::class,
+        DebtAgreementEntity::class, DebtMovementEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = true,
 )
 abstract class AgentLifeDatabase : RoomDatabase() {
@@ -38,4 +42,5 @@ abstract class AgentLifeDatabase : RoomDatabase() {
     abstract fun financeDao(): FinanceDao
     abstract fun financeInboxDao(): FinanceInboxDao
     abstract fun savingsGoalDao(): SavingsGoalDao
+    abstract fun debtDao(): DebtDao
 }

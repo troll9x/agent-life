@@ -59,7 +59,12 @@ class RoomFinanceRepository(private val database: AgentLifeDatabase, private val
         Outcome.Success(category.copy(name = category.name.trim()))
     }
 
-    override suspend fun post(command: PostFinanceCommand): Outcome<FinancialTransaction> = write {
+    override suspend fun post(command: PostFinanceCommand): Outcome<FinancialTransaction> = post(command, false)
+
+    /** Only the debt repository may call this while committing the matching movement. */
+    internal suspend fun postDebtComponent(command: PostFinanceCommand): Outcome<FinancialTransaction> = post(command, true)
+
+    private suspend fun post(command: PostFinanceCommand, debtComponent: Boolean): Outcome<FinancialTransaction> = write {
         if (dao.activeWorkspace(command.workspaceId.value) == null) return@write Outcome.Failure(AppError.NotFound)
         if (dao.byOperation(command.workspaceId.value, command.operationId.value) != null) return@write Outcome.Failure(AppError.Conflict)
         val replacementOfId = command.replacementOfId
@@ -93,13 +98,15 @@ class RoomFinanceRepository(private val database: AgentLifeDatabase, private val
         if (command.kind == TransactionKind.ADJUSTMENT && (command.note.isNullOrBlank() || adjustment == null ||
                 adjustment == 0L || adjustment == Long.MIN_VALUE ||
                 kotlin.math.abs(adjustment) != command.amount.amountMinor)) return@write invalid("adjustmentDeltaMinor")
-        // Debt posting waits for a persisted DebtAgreement; never write a dangling principal link.
-        if (command.kind in setOf(TransactionKind.LOAN_PRINCIPAL_IN, TransactionKind.LOAN_PRINCIPAL_OUT))
-            return@write invalid("debtId")
-        if (command.debtId != null)
+        if (debtComponent) {
+            val debt = command.debtId?.let { database.debtDao().agreement(command.workspaceId.value, it.value) }
+            if (debt == null || debt.currency != command.amount.currency.value) return@write invalid("debtId")
+        } else if (command.debtId != null || command.kind in setOf(TransactionKind.LOAN_PRINCIPAL_IN, TransactionKind.LOAN_PRINCIPAL_OUT))
             return@write invalid("debtId")
 
         val related = command.relatedTransactionId?.let { dao.transaction(command.workspaceId.value, it.value) }
+        if (related?.debtId != null && !debtComponent) return@write invalid("debtId")
+        if (debtComponent && related != null && related.debtId != command.debtId?.value) return@write invalid("debtId")
         val entries: List<Pair<Account, Long>> = when (command.kind) {
             TransactionKind.REFUND -> {
                 if (related?.kind != TransactionKind.EXPENSE.name || dao.reversal(command.workspaceId.value, related.id) != null)

@@ -64,7 +64,7 @@ Bảng khởi tạo: chưa có code nào trong bộ này được coi là IMPLEM
 | [REL-01](modules/16-release/REL-01.md) | PERSONAL | TODO | NOT_RUN | Chưa có |
 | [REL-02](modules/16-release/REL-02.md) | CONNECTED | TODO | NOT_RUN | Chưa có |
 | [REL-03](modules/16-release/REL-03.md) | SAAS | TODO | NOT_RUN | Chưa có |
-| [FIN-06](modules/04-finance/FIN-06.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
+| [FIN-06](modules/04-finance/FIN-06.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/FIN-06.md): gốc/lãi/phí atomic, audit đảo, Room v7; domain 2/2, data AVD 44/44, Compose/E2E/regression 6/6, lint/APK PASS |
 | [FIN-07](modules/04-finance/FIN-07.md) | PERSONAL | TODO | NOT_REQUIRED | Chưa có |
 | [FIN-08](modules/04-finance/FIN-08.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/FIN-08.md): reversal+replacement atomic, 31/31 data AVD, 2/2 Compose, lint/APK PASS |
 | [FIN-09](modules/04-finance/FIN-09.md) | PERSONAL | IMPLEMENTED | NOT_REQUIRED | [Evidence](../docs/progress/FIN-09.md): refund/category/period, signed adjustment, data AVD 34/34, Compose 3/3, lint/APK PASS; RQ-FIN-09-02 chờ AI consumer runtime |

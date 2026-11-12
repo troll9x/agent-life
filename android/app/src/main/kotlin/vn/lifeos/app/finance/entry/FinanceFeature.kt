@@ -28,6 +28,10 @@ import vn.lifeos.domain.finance.refund.ManualAdjustmentInput
 import vn.lifeos.domain.finance.reports.*
 import vn.lifeos.domain.finance.imports.*
 import vn.lifeos.domain.finance.goals.*
+import vn.lifeos.domain.finance.debt.DebtRepository
+import vn.lifeos.app.finance.debt.DebtActions
+import vn.lifeos.app.finance.debt.DebtFeature
+import vn.lifeos.app.finance.debt.DebtUiState
 import java.time.LocalDate
 import vn.lifeos.domain.foundation.AppError
 import vn.lifeos.domain.foundation.Outcome
@@ -46,9 +50,11 @@ internal data class FinanceUiState(
     val inboxError: String? = null, val inboxItems: List<InboxItem> = emptyList(),
     val goalsLoading: Boolean = false, val goalsBusy: Boolean = false, val goalsError: String? = null,
     val savingsGoals: List<SavingsGoal> = emptyList(), val goalOverview: GoalOverview? = null,
+    val debt: DebtUiState = DebtUiState(),
 )
 
 internal interface FinanceActions {
+    val debtActions: DebtActions? get() = null
     fun createAccount(name: String, kind: AccountKind, openingText: String, openingAsOf: Instant)
     fun createCategory(name: String, direction: CategoryDirection)
     fun postManual(input: ManualEntryInput)
@@ -86,6 +92,7 @@ internal class FinanceFeature(private val repository: FinanceRepository, private
     private val reports: FinanceReportsRepository? = null, private var budgetStartDay: Int = 1,
     private val inbox: FinanceInboxRepository? = null,
     private val goals: SavingsGoalRepository? = null,
+    debtRepository: DebtRepository? = null,
 ) : FinanceActions {
     private val commands = ManualFinanceCommands(repository, Locale.forLanguageTag("vi-VN"))
     private val corrections = ManualRefundAdjustmentCommands(repository, Locale.forLanguageTag("vi-VN"))
@@ -98,8 +105,14 @@ internal class FinanceFeature(private val repository: FinanceRepository, private
     private var inboxAction: Job? = null
     private var goalsJob: Job? = null
     private var goalsAction: Job? = null
+    override val debtActions = debtRepository?.let { DebtFeature(it, workspaceId, currency, clock, scope) }
 
-    init { retryFinance(); retryInbox(); retrySavingsGoals() }
+    init {
+        retryFinance(); retryInbox(); retrySavingsGoals()
+        debtActions?.let { feature -> scope.launch {
+            feature.state.collect { mutable.value = mutable.value.copy(debt = it) }
+        } }
+    }
 
     override fun retrySavingsGoals() {
         val source = goals ?: return
