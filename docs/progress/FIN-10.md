@@ -4,6 +4,8 @@
 
 Implementation: **IMPLEMENTED**. Snapshot, đối soát, UI, report và advice quality contract đã kiểm offline. **RQ-FIN-10-02 chưa VERIFIED toàn bộ** vì module lời khuyên AI chưa có consumer runtime. External gate: **EXTERNAL_BLOCKED** kế thừa nguồn ngân hàng thật của FIN-04. Kiểm ngày **12/11/2026**, JBR Android Studio, AVD riêng `AgentLife_Isolated_Test_API_37` (`emulator-5554`, API 37).
 
+Commit code được kiểm: `0c57600`.
+
 User nhập observed balance theo account/currency và mốc thời gian bằng picker. Expected được query từ ledger tại cùng mốc, difference = observed − expected. Lưu snapshot và xác nhận đã đối soát không tạo entry. Snapshot gốc giữ nguyên expected/observed/difference; trạng thái RESOLVED chỉ được ghi khi ledger hiện tại tại mốc đó bằng observed. Có xem ledger và candidates quanh ±7 ngày. Điều chỉnh mở form lý do và dialog riêng, gọi flow FIN-09; không tự đánh dấu resolved sau điều chỉnh.
 
 ## Prerequisite và hợp đồng
@@ -46,6 +48,7 @@ Trong `android/`, `JAVA_HOME=C:\Program Files\Android\Android Studio\jbr`. Adb d
 | `adb -s emulator-5554 shell am instrument -w vn.lifeos.data.test/androidx.test.runner.AndroidJUnitRunner` | `OK (55 tests)`: 4 reconciliation mới, regression schema v8/ledger/debt/scheduled/goals/inbox/report/planner/privacy/SQLCipher. |
 | `adb -s emulator-5554 shell am instrument -w -e class vn.lifeos.app.FinanceReconciliationUiTest,vn.lifeos.app.FinanceEntryUiTest,vn.lifeos.app.FinanceInboxUiTest,vn.lifeos.app.FinanceScheduledUiTest,vn.lifeos.app.FinanceEntryEndToEndTest vn.lifeos.app.test/androidx.test.runner.AndroidJUnitRunner` | `OK (8 tests)`: reconciliation E2E DB mã hóa, review/FIN-09 confirmation, report quality notice và regression tài chính. |
 | `git diff --check` | Exit 0; chỉ cảnh báo LF/CRLF. |
+| `git push origin main`; `gh run watch 43170677038 --exit-status --interval 15` | Commit `0c57600` đã đẩy; [Android CI 43170677038](https://github.com/troll9x/agent-life/actions/runs/43170677038) success, unit tests/lint/debug APK PASS. |
 
 ## Kịch bản và dữ liệu
 
