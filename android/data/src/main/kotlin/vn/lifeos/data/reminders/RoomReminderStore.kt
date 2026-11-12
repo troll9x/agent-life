@@ -47,8 +47,7 @@ class RoomReminderStore(private val database: AgentLifeDatabase) {
                 }
             }
             existing.filter { it.state == "PENDING" && it.slot == "SNOOZE" }.forEach { row ->
-                val active = if (row.targetType == "TASK") dao.task(workspaceId.value, row.targetId)?.state !in listOf(null, "DONE", "CANCELLED")
-                    else dao.eventTitle(workspaceId.value, row.targetId) != null
+                val active = active(row)
                 if (!active || row.triggerAt <= cutoff) {
                     dao.update(row.copy(state = "CANCELLED", updatedAt = time, version = row.version + 1))
                     cancelled += row.id
@@ -60,8 +59,7 @@ class RoomReminderStore(private val database: AgentLifeDatabase) {
     suspend fun claim(id: String, expectedTrigger: Long, now: Instant): ReminderEntity? = database.withTransaction {
         val row = dao.byId(id) ?: return@withTransaction null
         if (row.state != "PENDING" || row.triggerAt != expectedTrigger || row.triggerAt > now.toEpochMilli()) return@withTransaction null
-        val active = if (row.targetType == "TASK") dao.task(row.workspaceId, row.targetId)?.state !in listOf(null, "DONE", "CANCELLED")
-            else dao.eventTitle(row.workspaceId, row.targetId) != null
+        val active = active(row)
         dao.update(row.copy(state = if (active) "FIRED" else "CANCELLED", updatedAt = now.toEpochMilli(), version = row.version + 1))
         row.takeIf { active }
     }
@@ -69,6 +67,7 @@ class RoomReminderStore(private val database: AgentLifeDatabase) {
     suspend fun snooze(id: String, now: Instant): ReminderEntity? = database.withTransaction {
         val fired = dao.byId(id) ?: return@withTransaction null
         if (fired.slot != "DUE" || fired.state != "FIRED") return@withTransaction null
+        if (!active(fired)) return@withTransaction null
         if (fired.targetType == "TASK" && dao.task(fired.workspaceId, fired.targetId)?.state in listOf(null, "DONE", "CANCELLED")) return@withTransaction null
         val identity = key(fired.targetType, fired.targetId, fired.occurrenceKey, "SNOOZE")
         val before = dao.all(fired.workspaceId).firstOrNull { key(it.targetType, it.targetId, it.occurrenceKey, it.slot) == identity }
@@ -92,8 +91,18 @@ class RoomReminderStore(private val database: AgentLifeDatabase) {
         ReminderCompletion(task.id, pending.map(ReminderEntity::id))
     }
 
-    suspend fun title(row: ReminderEntity): String? = if (row.targetType == "TASK") dao.task(row.workspaceId, row.targetId)?.title
-        else dao.eventTitle(row.workspaceId, row.targetId)
+    private suspend fun active(row: ReminderEntity): Boolean = when (row.targetType) {
+        "TASK" -> dao.task(row.workspaceId, row.targetId)?.state !in listOf(null, "DONE", "CANCELLED")
+        "FINANCE" -> database.scheduledDao().reminderTitle(row.workspaceId, row.targetId, row.occurrenceKey) != null
+        "EVENT" -> dao.eventTitle(row.workspaceId, row.targetId) != null
+        else -> false
+    }
+
+    suspend fun title(row: ReminderEntity): String? = when (row.targetType) {
+        "TASK" -> dao.task(row.workspaceId, row.targetId)?.title
+        "FINANCE" -> database.scheduledDao().reminderTitle(row.workspaceId, row.targetId, row.occurrenceKey)
+        else -> dao.eventTitle(row.workspaceId, row.targetId)
+    }
 
     private fun key(type: String, id: String, occurrence: String, slot: String) = "$type|$id|$occurrence|$slot"
     private fun stableId(workspace: String, key: String) = UUID.nameUUIDFromBytes("$workspace|$key".toByteArray(StandardCharsets.UTF_8)).toString()

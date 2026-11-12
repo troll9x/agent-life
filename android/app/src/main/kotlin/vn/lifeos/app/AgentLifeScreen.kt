@@ -163,7 +163,10 @@ private fun AppShell(
     }
     var showMore by remember { mutableStateOf(false) }
     LaunchedEffect(reminderDestination) {
-        if (reminderDestination != null && selected != Area.Work) navController.navigate(WorkRoute) { launchSingleTop = true }
+        if (reminderDestination != null) {
+            if (reminderDestination.type == "FINANCE") navController.navigate(FinanceRoute) { launchSingleTop = true }
+            else if (selected != Area.Work) navController.navigate(WorkRoute) { launchSingleTop = true }
+        }
     }
     fun navigateTo(area: Area) {
         if (selected == area) return

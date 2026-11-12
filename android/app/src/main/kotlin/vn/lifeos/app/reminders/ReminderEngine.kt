@@ -22,7 +22,10 @@ internal class ReminderEngine(context: Context, private val database: AgentLifeD
         val tasks = (planner.observeTasks(workspaceId).first() as? Outcome.Success)?.value ?: return@withLock false
         val events = (planner.observeEvents(workspaceId).first() as? Outcome.Success)?.value ?: return@withLock false
         val exceptions = (planner.observeExceptions(workspaceId).first() as? Outcome.Success)?.value ?: return@withLock false
-        val plan = store.reconcile(workspaceId, reminderCandidates(tasks, events, exceptions, clock.instant(), zone), clock.instant())
+        val scheduled = vn.lifeos.data.finance.scheduled.RoomScheduledFinanceRepository(database, clock, vn.lifeos.domain.common.RandomIdGenerator)
+        if (scheduled.generateDue(workspaceId, zone) is Outcome.Failure) return@withLock false
+        val financeCandidates = vn.lifeos.data.finance.scheduled.scheduledReminderCandidates(database, workspaceId, zone)
+        val plan = store.reconcile(workspaceId, reminderCandidates(tasks, events, exceptions, clock.instant(), zone) + financeCandidates, clock.instant())
         plan.cancelIds.forEach(alarms::cancel)
         plan.schedule.forEach(alarms::schedule)
         true

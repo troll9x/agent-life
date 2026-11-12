@@ -129,7 +129,11 @@ private fun showReminder(context: Context, row: ReminderEntity, title: String) {
     val public = NotificationCompat.Builder(context, REMINDER_CHANNEL).setSmallIcon(R.drawable.ic_today)
         .setContentTitle("Agent Life").setContentText("Có lời nhắc").build()
     val builder = NotificationCompat.Builder(context, REMINDER_CHANNEL).setSmallIcon(R.drawable.ic_today)
-        .setContentTitle(title).setContentText(if (row.targetType == "TASK") "Đến hạn công việc" else "Sắp tới lịch hẹn")
+        .setContentTitle(title).setContentText(when (row.targetType) {
+            "TASK" -> "Đến hạn công việc"
+            "FINANCE" -> "Khoản dự kiến đến hạn — mở app để xem và xác nhận"
+            else -> "Sắp tới lịch hẹn"
+        })
         .setContentIntent(content).setAutoCancel(true).setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
         .setPublicVersion(public).setCategory(NotificationCompat.CATEGORY_REMINDER)
     if (row.slot == "DUE") builder.addAction(0, "Hoãn 10 phút", actionIntent(context, row, ACTION_SNOOZE))

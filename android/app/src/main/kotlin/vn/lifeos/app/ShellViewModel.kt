@@ -231,6 +231,7 @@ internal class ShellViewModel(
     override fun linkInbox(candidateId: Uuid, transactionId: Uuid) { financeFeature?.linkInbox(candidateId, transactionId) }
     override fun ignoreInbox(candidateId: Uuid) { financeFeature?.ignoreInbox(candidateId) }
     override val debtActions: vn.lifeos.app.finance.debt.DebtActions? get() = financeFeature?.debtActions
+    override val scheduledActions: vn.lifeos.app.finance.scheduled.ScheduledActions? get() = financeFeature?.scheduledActions
     override fun retrySavingsGoals() { financeFeature?.retrySavingsGoals() }
     override fun createSavingsGoal(name: String, targetText: String, targetDate: java.time.LocalDate?, accountIds: Set<Uuid>) {
         financeFeature?.createSavingsGoal(name, targetText, targetDate, accountIds)

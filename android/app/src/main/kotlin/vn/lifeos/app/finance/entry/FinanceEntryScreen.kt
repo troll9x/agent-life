@@ -182,6 +182,7 @@ internal fun FinanceEntryScreen(state: FinanceUiState, workspaceId: Uuid, zone: 
         FinanceInboxSection(state, zone, actions)
         SavingsGoalsSection(state, workspaceId, zone, now, actions)
         vn.lifeos.app.finance.debt.DebtSection(state.debt, state.accounts, state.categories, zone, now, actions?.debtActions)
+        vn.lifeos.app.finance.scheduled.ScheduledSection(state.scheduled, state.accounts, state.categories, zone, now, actions?.scheduledActions)
         RefundAdjustmentSection(workspaceId, state.accounts, state.transactions, state.balances,
             state.monthlyReports, zone, now, state.busy, state.error, state.confirmation, state.actionVersion,
             onRefund = { input -> actions?.postRefund(input) },

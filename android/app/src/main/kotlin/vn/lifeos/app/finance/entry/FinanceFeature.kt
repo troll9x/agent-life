@@ -51,9 +51,11 @@ internal data class FinanceUiState(
     val goalsLoading: Boolean = false, val goalsBusy: Boolean = false, val goalsError: String? = null,
     val savingsGoals: List<SavingsGoal> = emptyList(), val goalOverview: GoalOverview? = null,
     val debt: DebtUiState = DebtUiState(),
+    val scheduled: vn.lifeos.app.finance.scheduled.ScheduledUiState = vn.lifeos.app.finance.scheduled.ScheduledUiState(),
 )
 
 internal interface FinanceActions {
+    val scheduledActions: vn.lifeos.app.finance.scheduled.ScheduledActions? get() = null
     val debtActions: DebtActions? get() = null
     fun createAccount(name: String, kind: AccountKind, openingText: String, openingAsOf: Instant)
     fun createCategory(name: String, direction: CategoryDirection)
@@ -93,6 +95,8 @@ internal class FinanceFeature(private val repository: FinanceRepository, private
     private val inbox: FinanceInboxRepository? = null,
     private val goals: SavingsGoalRepository? = null,
     debtRepository: DebtRepository? = null,
+    scheduledRepository: vn.lifeos.domain.finance.scheduled.ScheduledFinanceRepository? = null,
+    rescheduleFinance: () -> Unit = {},
 ) : FinanceActions {
     private val commands = ManualFinanceCommands(repository, Locale.forLanguageTag("vi-VN"))
     private val corrections = ManualRefundAdjustmentCommands(repository, Locale.forLanguageTag("vi-VN"))
@@ -106,8 +110,14 @@ internal class FinanceFeature(private val repository: FinanceRepository, private
     private var goalsJob: Job? = null
     private var goalsAction: Job? = null
     override val debtActions = debtRepository?.let { DebtFeature(it, workspaceId, currency, clock, scope) }
+    override val scheduledActions = scheduledRepository?.let {
+        vn.lifeos.app.finance.scheduled.ScheduledFeature(it, workspaceId, zone, clock, scope, rescheduleFinance)
+    }
 
     init {
+        scheduledActions?.let { feature -> scope.launch {
+            feature.state.collect { mutable.value = mutable.value.copy(scheduled = it) }
+        } }
         retryFinance(); retryInbox(); retrySavingsGoals()
         debtActions?.let { feature -> scope.launch {
             feature.state.collect { mutable.value = mutable.value.copy(debt = it) }
@@ -234,12 +244,14 @@ internal class FinanceFeature(private val repository: FinanceRepository, private
     }
 
     fun updateZone(value: ZoneId) {
+        scheduledActions?.updateZone(value)
         if (zone == value) return
         zone = value
         retryFinance()
     }
 
     fun updateProfile(value: ZoneId, startDay: Int) {
+        scheduledActions?.updateZone(value)
         if (zone == value && budgetStartDay == startDay) return
         zone = value; budgetStartDay = startDay
         mutable.value = mutable.value.copy(reportPeriod = null)

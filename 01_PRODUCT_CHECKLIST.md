@@ -183,8 +183,8 @@ Mức PERSONAL · [Prompt nhiệm vụ](modules/04-finance/FIN-06.md)
 
 Mức PERSONAL · [Prompt nhiệm vụ](modules/04-finance/FIN-07.md)
 
-- [ ] **RQ-FIN-07-01** Khoản dự kiến/lặp chưa xác nhận không làm thay đổi balance hoặc thực chi.
-- [ ] **RQ-FIN-07-02** Mỗi occurrence có tối đa một khoản được post sau approve, có thể ghép với bằng chứng ngân hàng.
+- [x] **RQ-FIN-07-01** Khoản dự kiến/lặp chưa xác nhận không làm thay đổi balance hoặc thực chi.
+- [x] **RQ-FIN-07-02** Mỗi occurrence có tối đa một khoản được post sau approve, có thể ghép với bằng chứng ngân hàng.
 
 ### FIN-08 Sửa khoản đã post bằng reversal
 

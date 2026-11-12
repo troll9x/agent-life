@@ -30,8 +30,10 @@ import vn.lifeos.data.finance.debt.DebtDao
         SourceEvidenceEntity::class, ImportCandidateEntity::class, BudgetEntity::class, ReconciliationEntity::class,
         SavingsGoalEntity::class, SavingsGoalAccountEntity::class,
         DebtAgreementEntity::class, DebtMovementEntity::class,
+        vn.lifeos.data.finance.scheduled.ScheduledTransactionEntity::class,
+        vn.lifeos.data.finance.scheduled.PlannedTransactionEntity::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = true,
 )
 abstract class AgentLifeDatabase : RoomDatabase() {
@@ -43,4 +45,5 @@ abstract class AgentLifeDatabase : RoomDatabase() {
     abstract fun financeInboxDao(): FinanceInboxDao
     abstract fun savingsGoalDao(): SavingsGoalDao
     abstract fun debtDao(): DebtDao
+    abstract fun scheduledDao(): vn.lifeos.data.finance.scheduled.ScheduledDao
 }

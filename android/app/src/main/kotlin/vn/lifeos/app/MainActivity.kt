@@ -88,7 +88,7 @@ class MainActivity : ComponentActivity() {
 internal data class ReminderDestination(val type: String, val id: String, val occurrenceKey: String, val triggerAt: Long)
 
 private fun Intent.reminderDestination(): ReminderDestination? {
-    val type = getStringExtra("reminder_target_type")?.takeIf { it == "TASK" || it == "EVENT" } ?: return null
+    val type = getStringExtra("reminder_target_type")?.takeIf { it in setOf("TASK", "EVENT", "FINANCE") } ?: return null
     val id = getStringExtra("reminder_target_id")?.takeIf { it.isNotBlank() } ?: return null
     val occurrenceKey = getStringExtra("reminder_occurrence_key") ?: id
     return ReminderDestination(type, id, occurrenceKey, getLongExtra("reminder_trigger_at", -1))

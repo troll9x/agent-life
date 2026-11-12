@@ -11,7 +11,7 @@ import vn.lifeos.domain.foundation.Outcome
 enum class TaskState { OPEN, DOING, DONE, CANCELLED }
 enum class EventTimeKind { TIMED, ALL_DAY }
 enum class ReminderState { PENDING, FIRED, CANCELLED }
-enum class ReminderTarget { TASK, EVENT }
+enum class ReminderTarget { TASK, EVENT, FINANCE }
 
 data class Project(val id: Uuid, val workspaceId: Uuid, val title: String, val color: String?, val archivedAt: Instant?, val version: Long)
 data class PlannedTask(

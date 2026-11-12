@@ -191,6 +191,8 @@ class RoomPlannerRepository(private val database: AgentLifeDatabase, private val
         val targetExists = when (command.targetType) {
             ReminderTarget.TASK -> dao.task(command.workspaceId.value, command.targetId.value) != null
             ReminderTarget.EVENT -> dao.event(command.workspaceId.value, command.targetId.value) != null
+            ReminderTarget.FINANCE -> database.scheduledDao().reminderTitle(command.workspaceId.value,
+                command.targetId.value, command.occurrenceKey) != null
         }
         if (!targetExists) return@write Outcome.Failure(AppError.NotFound)
         val now = clock.millis()

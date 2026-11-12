@@ -55,7 +55,8 @@ class EncryptedDatabaseProvider(
                     .addMigrations(FoundationMigrations.from1To2, FoundationMigrations.from2To3,
                         PlannerMigration.from3To4, FinanceMigration.from4To5,
                         vn.lifeos.data.finance.goals.SavingsGoalMigration.from5To6,
-                        vn.lifeos.data.finance.debt.DebtMigration.from6To7)
+                        vn.lifeos.data.finance.debt.DebtMigration.from6To7,
+                        vn.lifeos.data.finance.scheduled.ScheduledMigration.from7To8)
                     .build()
                 try {
                     database.openHelper.writableDatabase.query("SELECT COUNT(*) FROM sqlite_master").use { it.moveToFirst() }
