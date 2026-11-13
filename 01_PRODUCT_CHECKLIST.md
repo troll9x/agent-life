@@ -213,8 +213,8 @@ Mức PERSONAL · [Prompt nhiệm vụ](modules/04-finance/FIN-10.md)
 
 Mức CONNECTED · [Prompt nhiệm vụ](modules/05-bank-notifications/NOTI-01.md)
 
-- [ ] **RQ-NOTI-01-01** Notification app không nằm allowlist không để lại nội dung trong DB/log.
-- [ ] **RQ-NOTI-01-02** Khi UI đóng, notification được phép vẫn vào queue; thu hồi quyền được nhận diện.
+- [x] **RQ-NOTI-01-01** Notification app không nằm allowlist không để lại nội dung trong DB/log. [Evidence NOTI-01](docs/progress/NOTI-01.md): unit + Room + listener AVD với fixture UID riêng; ngân hàng thật chưa kiểm.
+- [x] **RQ-NOTI-01-02** Khi UI đóng, notification được phép vẫn vào queue; thu hồi quyền được nhận diện. [Evidence NOTI-01](docs/progress/NOTI-01.md): OS listener AVD API 37, HOME/cross-package/revoke PASS; physical/OEM/force-stop chưa kiểm.
 
 ### NOTI-02 Parser thông báo theo mẫu ngân hàng
 

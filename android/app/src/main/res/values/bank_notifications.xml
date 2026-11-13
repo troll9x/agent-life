@@ -1,0 +1,24 @@
+<resources>
+    <string name="bank_notification_title">Thông báo ngân hàng</string>
+    <string name="bank_notification_explanation">Notification access là quyền đọc thông báo rộng trên thiết bị, khác quyền gửi thông báo của Agent Life. Bạn tự bật quyền trong Cài đặt Android và chỉ chọn những ứng dụng ngân hàng bạn tin cậy. Agent Life bỏ thông báo từ ứng dụng chưa chọn trước khi đọc nội dung; không gửi nội dung lên AI hay máy chủ.</string>
+    <string name="bank_access_granted">Quyền đọc thông báo: Đã cấp</string>
+    <string name="bank_access_denied">Quyền đọc thông báo: Chưa cấp hoặc đã thu hồi</string>
+    <string name="bank_listener_connected">Dịch vụ: Đã kết nối Android</string>
+    <string name="bank_listener_disconnected">Dịch vụ: Chưa kết nối Android</string>
+    <string name="bank_capture_enabled">Nguồn thu: Đã bật cho ứng dụng đã chọn, độ phủ chưa đầy đủ</string>
+    <string name="bank_capture_stopped">Nguồn thu: Chưa bật hoặc đang chờ quyền</string>
+    <string name="bank_last_received">Nhận lần cuối: %1$s</string>
+    <string name="bank_never_received">Chưa nhận</string>
+    <string name="bank_capture_count">Đã lưu %1$d bản thu thông báo trên thiết bị này</string>
+    <string name="bank_capture_limitations">Chỉ thu thông báo mới khi Android cho phép dịch vụ chạy; không khôi phục lịch sử đã mất. Hoạt động cục bộ khi ngoại tuyến. Android có thể ẩn nội dung nhạy cảm; dữ liệu thiếu cần kiểm tra lại. Nội dung chờ xử lý được mã hóa, chỉ dùng tối đa 15 phút và xóa khi ngừng thu hoặc thu hồi quyền. Chưa có bộ phân tích ngân hàng; khoản trong Hộp thư luôn cần duyệt, không tự ghi sổ.</string>
+    <string name="bank_open_access">Mở quyền đọc thông báo</string>
+    <string name="bank_reconnect">Kết nối lại dịch vụ</string>
+    <string name="bank_capture_error">Không thể hoàn tất lưu/cấu hình. Có thể đã bỏ lỡ thông báo. Kiểm tra quyền, mở khóa thiết bị và thử lại lựa chọn ứng dụng.</string>
+    <string name="bank_loading">Đang mở kho dữ liệu và danh sách ứng dụng…</string>
+    <string name="bank_search_app">Tìm ứng dụng theo tên hoặc package</string>
+    <string name="bank_selected_count">Đã chọn %1$d ứng dụng (không xác minh danh tính ngân hàng)</string>
+    <string name="bank_nothing_selected">Chưa chọn ứng dụng. Không có thông báo nào được thu. Tìm tên ứng dụng để chọn.</string>
+    <string name="bank_no_app">Không tìm thấy ứng dụng có màn hình khởi chạy phù hợp.</string>
+    <string name="bank_stop_capture">Ngừng thu tất cả ứng dụng</string>
+    <string name="bank_settings_unavailable">Không mở được trang quyền trên thiết bị này. Mở Cài đặt Android → Quyền truy cập thông báo → Agent Life.</string>
+</resources>

@@ -20,6 +20,7 @@ class RetentionWorker(context: Context, params: WorkerParameters) : CoroutineWor
         return when (val access = provider.open()) {
             is DatabaseAccess.Ready -> try {
                 access.database.privacyDao().purgeExpired(Clock.systemUTC().millis())
+                access.database.notificationDao().purgeExpired(Clock.systemUTC().millis())
                 Result.success()
             } finally { provider.close() }
             DatabaseAccess.UnlockDeviceFirst, DatabaseAccess.StorageUnavailable -> Result.retry()

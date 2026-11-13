@@ -35,6 +35,7 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.lifecycle.runtime.compose)
     implementation(libs.work.runtime)
+    implementation(libs.room.runtime)
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlin.test.junit)
     testImplementation(libs.coroutines.test)

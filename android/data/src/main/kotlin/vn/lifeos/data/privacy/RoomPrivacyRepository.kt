@@ -81,7 +81,7 @@ class RoomPrivacyRepository(
     }
 
     override suspend fun purgeExpiredRaw(): PrivacyResult<Int> = dbResult {
-        PrivacyResult.Success(dao.purgeExpired(clock.millis()))
+        PrivacyResult.Success(dao.purgeExpired(clock.millis()) + database.notificationDao().purgeExpired(clock.millis()))
     }
 
     override suspend fun disconnect(workspaceId: Uuid, connectionId: Uuid, deleteCache: Boolean): PrivacyResult<Unit> {
@@ -90,7 +90,10 @@ class RoomPrivacyRepository(
                 if (dao.connection(workspaceId.value, connectionId.value) == null) return@withTransaction PrivacyResult.NotFound
                 val changed = dao.markDisconnected(workspaceId.value, connectionId.value, clock.millis())
                 dao.clearConnectionRaw(workspaceId.value, connectionId.value)
+                database.notificationDao().clearConnectionPayloads(workspaceId.value, connectionId.value)
                 if (deleteCache) {
+                    database.notificationDao().deleteConnectionCaptures(workspaceId.value, connectionId.value)
+                    database.notificationDao().deleteConnectionApps(workspaceId.value, connectionId.value)
                     dao.deleteConnectionCaptures(workspaceId.value, connectionId.value)
                     dao.deleteConnectionCheckpoints(workspaceId.value, connectionId.value)
                 }
@@ -114,6 +117,7 @@ class RoomPrivacyRepository(
             database.withTransaction {
                 val owned = dao.connections(workspaceId.value)
                 dao.markWorkspaceDisconnected(workspaceId.value, clock.millis())
+                owned.forEach { database.notificationDao().clearConnectionPayloads(workspaceId.value, it.id) }
                 owned.map { Uuid.parse(it.id) }
             }
         } catch (cancelled: CancellationException) { throw cancelled }
@@ -124,6 +128,8 @@ class RoomPrivacyRepository(
         }
         val deleted = dbResult {
             database.withTransaction {
+                database.notificationDao().deleteWorkspaceCaptures(workspaceId.value)
+                database.notificationDao().deleteWorkspaceApps(workspaceId.value)
                 dao.deleteCaptures(workspaceId.value)
                 dao.deletePreferences(workspaceId.value)
                 dao.deleteCheckpoints(workspaceId.value)

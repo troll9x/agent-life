@@ -47,6 +47,7 @@ internal fun ProfileSettingsScreen(
     darkTheme: Boolean,
     onThemeChange: (Boolean) -> Unit,
     onSave: (ProfileInput) -> Unit,
+    bankNotifications: @Composable () -> Unit = {},
 ) {
     val profile = snapshot.profile
     var name by rememberSaveable(profile.id.value, profile.version) { mutableStateOf(profile.displayName) }
@@ -84,6 +85,7 @@ internal fun ProfileSettingsScreen(
             Switch(darkTheme, onThemeChange, modifier = Modifier.testTag("dark_theme").semantics { contentDescription = darkLabel })
         }
         NotificationPermissionOption()
+        bankNotifications()
         IntegrationsScreen(snapshot.connections, profile.zoneId, profile.baseCurrency)
     }
 }
@@ -94,7 +96,7 @@ private fun IntegrationsScreen(connections: List<ConnectionSummary>, zone: Strin
     val formatters = UserFormatters(zone, currency)
     Text(stringResource(R.string.integrations_title), style = MaterialTheme.typography.headlineSmall)
     Text(stringResource(R.string.integrations_gate), style = MaterialTheme.typography.bodyMedium)
-    val providers = (listOf("MICROSOFT", "GOOGLE", "HEALTH_CONNECT") + connections.map { it.provider }).distinct()
+    val providers = (listOf("MICROSOFT", "GOOGLE", "HEALTH_CONNECT") + connections.map { it.provider }).distinct().filter { it != "NOTIFICATION" }
     providers.forEach { provider ->
         val matching = connections.filter { it.provider == provider }
         if (matching.isEmpty()) ConnectionCard(provider, null, formatters) { gate = true }

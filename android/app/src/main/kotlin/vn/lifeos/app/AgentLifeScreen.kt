@@ -219,7 +219,8 @@ private fun AppShell(
                 composable<AssistantRoute> { AreaScreen(Area.Assistant) }
                 composable<SettingsRoute> {
                     ProfileSettingsScreen(snapshot, now, action == ProfileAction.Saving,
-                        action == ProfileAction.Error, darkTheme, onThemeChange, onUpdateProfile)
+                        action == ProfileAction.Error, darkTheme, onThemeChange, onUpdateProfile,
+                        bankNotifications = { vn.lifeos.app.banknotifications.BankNotificationSettings() })
                 }
             }
         }

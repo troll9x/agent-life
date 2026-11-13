@@ -34,6 +34,7 @@ import java.time.ZoneId
 class AppContainer(context: Context, databaseProvider: EncryptedDatabaseProvider) {
     private val applicationContext = context.applicationContext
     val clock: Clock = Clock.systemUTC()
+    val bankNotifications = vn.lifeos.app.banknotifications.BankNotificationRuntime(applicationContext, databaseProvider, clock)
     val startupRepository: StartupRepository = EncryptedStartupRepository(databaseProvider)
     val appearanceRepository: AppearanceRepository = AppearanceRepository(context.applicationContext)
     val networkStatus: Flow<Boolean> = NetworkStatusRepository(context.applicationContext).online

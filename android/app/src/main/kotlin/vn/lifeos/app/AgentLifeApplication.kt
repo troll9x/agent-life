@@ -12,6 +12,7 @@ class AgentLifeApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        appContainer.bankNotifications.start()
         RetentionScheduler.schedule(this)
         createReminderChannel(this)
         ReminderWorkSchedule.register(this)

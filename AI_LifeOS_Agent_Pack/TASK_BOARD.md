@@ -23,7 +23,7 @@ Bảng khởi tạo: chưa có code nào trong bộ này được coi là IMPLEM
 | [FIN-03](modules/04-finance/FIN-03.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/FIN-03.md): domain 3/3, Room AVD 1/1, Compose 4/4, app E2E 1/1, lint/APK PASS; CSV picker thủ công chưa kiểm |
 | [FIN-04](modules/04-finance/FIN-04.md) | PERSONAL | VERIFIED | EXTERNAL_BLOCKED | [Evidence](../docs/progress/FIN-04.md): matcher 4/4, Room AVD 3/3, Compose inbox 1/1, finance UI 4/4, E2E 1/1, lint/APK PASS; nguồn notification/email thật chờ connector/parser |
 | [FIN-05](modules/04-finance/FIN-05.md) | PERSONAL | VERIFIED | NOT_REQUIRED | [Evidence](../docs/progress/FIN-05.md): mục tiêu và transfer từ ledger, migration Room 5→6, domain 2/2, Room AVD 2/2, Compose 5/5, lint/APK PASS |
-| [NOTI-01](modules/05-bank-notifications/NOTI-01.md) | CONNECTED | TODO | NOT_RUN | Chưa có |
+| [NOTI-01](modules/05-bank-notifications/NOTI-01.md) | CONNECTED | VERIFIED | EXTERNAL_BLOCKED | [Evidence](../docs/progress/NOTI-01.md): listener hệ thống AVD/UID fixture riêng khi UI đóng, allowlist/revoke, queue SQLCipher v9; filter 4/4, data 59/59 + targeted 13/13, app 3/3 + shell 2/2, lint/APK PASS; ngân hàng/thiết bị vật lý và khóa màn hình thật chưa kiểm |
 | [NOTI-02](modules/05-bank-notifications/NOTI-02.md) | CONNECTED | TODO | NOT_RUN | Chưa có |
 | [NOTI-03](modules/05-bank-notifications/NOTI-03.md) | CONNECTED | TODO | NOT_RUN | Chưa có |
 | [NOTI-04](modules/05-bank-notifications/NOTI-04.md) | CONNECTED | TODO | NOT_RUN | Chưa có |
