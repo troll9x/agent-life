@@ -2,7 +2,7 @@
 
 ## Kết quả
 
-Implementation: **VERIFIED trên AVD với nguồn fixture có UID riêng**. External gate: **EXTERNAL_BLOCKED** cho ngân hàng/thiết bị vật lý thật. Kiểm ngày 13/11/2026, base `6951fb8`; không đánh đồng kiểm fixture với hỗ trợ một ngân hàng thật.
+Implementation: **VERIFIED trên AVD với nguồn fixture có UID riêng**. External gate: **EXTERNAL_BLOCKED** cho ngân hàng/thiết bị vật lý thật. Kiểm ngày 13/11/2026, base `6951fb8`, commit code **`efc6b51`**; không đánh đồng kiểm fixture với hỗ trợ một ngân hàng thật.
 
 Đã nối NotificationListenerService vào app Kotlin/Compose và DB SQLCipher hiện có. Cài đặt → Thông báo ngân hàng cho phép tìm/chọn ứng dụng, mở quyền Notification access, xem trạng thái quyền/dịch vụ/nguồn thu, thời điểm nhận cuối và ngừng thu. Quyền đọc này tách biệt với POST_NOTIFICATIONS đã có ở onboarding.
 
@@ -13,7 +13,7 @@ Implementation: **VERIFIED trên AVD với nguồn fixture có UID riêng**. Ext
 - Dùng NotificationCapture theo hợp đồng: workspace/connection/device/package, key SHA-256 (không giữ tag gốc), postTime, hash nội dung, revision, processingState. Room **v8→v9**, không DB thứ hai hay destructive fallback.
 - Package được kiểm tra trước khi truy cập extras; bỏ group summary và thông báo có dấu hiệu OTP. Bảo thủ: thông báo chứa cả dấu hiệu OTP và tiền cũng bị bỏ. Recheck grant/allowlist/connection/device trong transaction trước khi lưu. Không logging body, network, AI hoặc Sheets trong luồng này.
 - Callback chỉ chụp chuỗi giới hạn title 256/body 4096; bridge RAM tối đa 32 thông báo. Hash/filter/transaction chạy trên application IO scope, không phụ thuộc Activity/ViewModel. Chỉ cập nhật số lượng/thời điểm nhận sau commit DB; overflow/lỗi lưu hiện cảnh báo có thể bỏ lỡ thông báo.
-- Payload chờ parser được mã hóa và **chỉ đọc được trong 15 phút**. Đây là queue xử lý tạm, không phải diagnostic raw cache. `pendingPayload` loại dữ liệu hết hạn ngay; purge khi capture, qua retention startup/hourly best effort; ack/ngừng chọn/ngắt nguồn/thu hồi quyền xóa title/body. Không hứa xóa byte đúng phút thứ 15 khi Android đình chỉ worker. Raw mặc định không giữ sau parse; parser NOTI-02 chưa triển khai nên hiện chưa có consumer parse.
+- Payload chờ parser được mã hóa; **queue reader `pendingPayload` chỉ trả payload chưa hết hạn 15 phút**. Đây là queue xử lý tạm, không phải diagnostic raw cache. Purge khi capture, qua retention startup/hourly best effort; ack/ngừng chọn/ngắt nguồn/thu hồi quyền xóa title/body. Không hứa xóa byte đúng phút thứ 15 khi Android đình chỉ worker. Raw mặc định không giữ sau parse; parser NOTI-02 chưa triển khai nên hiện chưa có consumer parse. Consumer đó phải kiểm lại quyền/connection/allowlist trước khi đọc và xử lý, không dùng query snapshot phục vụ test để đọc payload.
 - Capture adapter v1 tạo candidate metadata-only trong cùng transaction FIN-04: parserVersion=1 đánh phiên bản adapter, mọi trường amount/currency/direction/occurredAt/account/category đều null và có missingFields. Chưa hỗ trợ mẫu ngân hàng nào; postTime không bị dùng thay thời điểm giao dịch, không suy amount=0, không tự ghi ledger. NOTI-02 phải tạo revision parser riêng và clear payload sau xử lý.
 - Source luôn PARTIAL khi được phép thu, không suy dịch vụ connected thành đủ giao dịch. Không scan active/history notifications hay khôi phục lịch sử mất. Catalog chỉ ứng dụng có launcher; không dùng QUERY_ALL_PACKAGES, không hardcode package ngân hàng hoặc tự xác nhận danh tính ngân hàng.
 
@@ -63,6 +63,8 @@ PowerShell, repo `D:\GIT\Agent Life`; Gradle trong `android/`, `JAVA_HOME=C:\Pro
 | `adb -s emulator-5554 shell am instrument -w -e class vn.lifeos.app.ShellNavigationTest vn.lifeos.app.test/androidx.test.runner.AndroidJUnitRunner` | **OK (2 tests)**: điều hướng qua Cài đặt có registration mới và xoay màn hình. |
 | `adb -s emulator-5554 shell settings get secure enabled_notification_listeners`; `adb -s emulator-5554 shell dumpsys package vn.lifeos.app`; `adb -s emulator-5554 uninstall vn.lifeos.notificationfixture` | Đã restore: không còn listener Agent Life được cấp quyền; POST_NOTIFICATIONS app vẫn true như trước. Gỡ publisher fixture Success. |
 | `git diff --check` | Exit 0, chỉ cảnh báo LF/CRLF. |
+| `git push origin main`; `gh run watch 43356321574 --exit-status --interval 15` | Commit code `efc6b51` đã đẩy. [Android CI 43356321574](https://github.com/troll9x/agent-life/actions/runs/43356321574) **success**, unit tests/lint/debug APK PASS, exit 0. |
+| `adb -s emulator-5554 emu kill` | OK, tắt AVD headless đã khởi động để thử nghiệm sau khi hoàn tất các test và restore quyền/gỡ fixture. |
 
 ## Kịch bản và dữ liệu
 
